@@ -17,10 +17,10 @@ class Ship:
     ship_length: int
     # vertical (V) and horizontal (H) position of the ship on the map,
     # starts at top left with 0/0
-    position_start_v: int
     position_start_h: int
-    position_end_v: int
     position_end_h: int
+    position_start_v: int
+    position_end_v: int
     # simplification of the actual positions of the ships.
     # max HP of a ship == ship_length.
     current_hp: int
@@ -30,29 +30,32 @@ class Ship:
     def __init__(
         self,
         ship_length: int,
-        position_start_v: int,
         position_start_h: int,
-        position_end_v: int,
         position_end_h: int,
+        position_start_v: int,
+        position_end_v: int,
     ):
         self.ship_length = ship_length
         self.position_start_h = position_start_h
-        self.position_start_v = position_start_v
         self.position_end_h = position_end_h
+        self.position_start_v = position_start_v
         self.position_end_v = position_end_v
+        self.current_hp = ship_length
+        self.remaining_visibility_rounds = 0
 
 
 class Player:
     name: str = "Spieler"
     ships: List[Ship] = []
-    # list of already tried positions
-    missed_shots: list
+    # list of already tried positions with tuple-pairs for the horizontal and vertical position
+    missed_shots: List[tuple]
     games_won: int = 0
 
     def __init__(self, name: str):
         self.name = name
         self.games_won = 0
         self.ships = []
+        self.missed_shots = []
 
 
 class LogMessage:
@@ -140,7 +143,7 @@ class Game:
         self.initial_board_width = 10
         self.initial_fog_width = 4
         self.total_board_height = self.initial_board_height
-        self.total_board_width = self.initial_board_width + self.initial_fog_width
+        self.total_board_width = 2 * self.initial_board_width + self.initial_fog_width
 
         # define ships
         self.max_ship_length = 5

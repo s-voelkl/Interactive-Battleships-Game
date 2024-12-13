@@ -16,6 +16,18 @@ IN CASE OF BUGS:
 
 
 
+TODO:
+- print_map_infos_with_grid mit eigenen Schiffen, Gegnerschiffen, missed Shots usw. farbig und inhaltlich darstellen.
+- Schiffsverteilung zu Spielbeginn schreiben (dynamisch, inkl. rückgängig-option)
+- Runden schreiben
+* Bewegen nach vorne/hinten (+ Validierung)
+* drehen um die Achse (+ Validierung, selbe, wie Bewegung)
+* Angreifen mit Schiff auf Feld (inkl. Trefferwahrscheinlichkeit, Anzahl der Schüsse, HP-Anpassung, Sichtanpassung)
+- evtl. Zusatz:
+* Rammen
+* Kritische Treffer (+Wahrscheinlichkeit)
+* Erneutes Aufklärungsschüsse.
+
 
 SOURCES:
 [1]: Clear CMD: stackoverflow.com/questions/517970/how-can-i-clear-the-interpreter-console
