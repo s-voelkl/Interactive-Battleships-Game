@@ -1,5 +1,5 @@
 from typing import List
-import datetime as dt
+from datetime import datetime
 
 
 class GeneralShipInfo:
@@ -24,11 +24,29 @@ class Ship:
     # simplification of the actual positions of the ships.
     # max HP of a ship == ship_length.
     current_hp: int
+    # How many rounds the ship is visible after being detected.
+    remaining_visibility_rounds: int
+
+    def __init__(
+        self,
+        ship_length: int,
+        position_start_v: int,
+        position_start_h: int,
+        position_end_v: int,
+        position_end_h: int,
+    ):
+        self.ship_length = ship_length
+        self.position_start_h = position_start_h
+        self.position_start_v = position_start_v
+        self.position_end_h = position_end_h
+        self.position_end_v = position_end_v
 
 
 class Player:
     name: str = "Spieler"
     ships: List[Ship] = []
+    # list of already tried positions
+    missed_shots: list
     games_won: int = 0
 
     def __init__(self, name: str):
@@ -39,7 +57,7 @@ class Player:
 
 class LogMessage:
     text: str
-    time: dt
+    time: datetime
     # to which players the log message is being sent. if empty, send it to all players.
     related_players: List[str]
 
@@ -47,7 +65,7 @@ class LogMessage:
         self,
         text: str,
         related_players: List[Player] = [],
-        time=dt.datetime.now(),
+        time=datetime.now(),
     ):
         self.related_players = related_players
         self.text = text
@@ -60,7 +78,7 @@ class Game:
     initial_board_width: int = 10
     # the calculated total height/width, including 2 * players inital board width [+ inital fog width]
     total_board_height: int = 10
-    total_board_width: int = 10
+    total_board_width: int = 24
     initial_fog_width: int = 4
     max_ship_length: int = 5
     general_ship_infos: List[GeneralShipInfo]
@@ -71,7 +89,10 @@ class Game:
     log_messages: List[LogMessage]
 
     def add_log_message(
-        self, text: str, related_players: list[str] = [], time: dt = dt.datetime.now()
+        self,
+        text: str,
+        related_players: list[str] = [],
+        time: datetime = datetime.now(),
     ):
         self.log_messages.append(
             LogMessage(related_players=related_players, text=text.strip())
@@ -140,8 +161,57 @@ class Game:
 
         # set ingame players
         self.set_ingame_players()
-        self.current_player = self.ingame_players[0]
+        self.current_player = (
+            self.ingame_players[0].name if self.ingame_players[0] is not None else ""
+        )
 
         self.add_log_message("Game setup done.")
 
         return self
+
+    def debug_display_game_props(self):
+        """Debug method to display all properties of the object game."""
+
+        print("\n\n\nDEBUG INFOS ABOUT THE GAME OBJECT:")
+
+        # SOURCE [2] for this variable "props" and output
+        props = [
+            f"initial_board_height: {self.initial_board_height}",
+            f"initial_board_width: {self.initial_board_width}",
+            f"total_board_height: {self.total_board_height}",
+            f"total_board_width: {self.total_board_width}",
+            f"initial_fog_width: {self.initial_fog_width}",
+            f"max_ship_length: {self.max_ship_length}",
+            f"total_ships_per_player: {self.total_ships_per_player}",
+            f"avg_ship_length: {self.avg_ship_length}",
+            f"current_player: {self.current_player} (Player object)",
+        ]
+        for prop in props:
+            print(prop)
+        # SOURCE [2] until here.
+
+        print("\ngeneral_ship_infos:")
+        for ship in self.general_ship_infos:
+            print(ship.count, "x", ship.length, "er (", ship.title, ")")
+
+        print("\ningame_players:")
+        for player in self.ingame_players:
+            print(player.name, "with ships: ", len(player.ships))
+            for ship in player.ships:
+                print(
+                    "- Ship:",
+                    ship.ship_length,
+                    "at (H)",
+                    ship.position_start_h,
+                    "-",
+                    ship.position_end_h,
+                    "and (V)",
+                    ship.position_start_v,
+                    "-",
+                    ship.position_end_v,
+                    "with HP:",
+                    ship.current_hp,
+                )
+            print()
+
+        print()
