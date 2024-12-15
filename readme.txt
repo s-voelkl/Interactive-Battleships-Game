@@ -17,7 +17,6 @@ IN CASE OF BUGS:
 
 
 TODO:
-- print_map_infos_with_grid mit eigenen Schiffen, Gegnerschiffen, missed Shots usw. farbig und inhaltlich darstellen.
 - Schiffsverteilung zu Spielbeginn schreiben (dynamisch, inkl. rückgängig-option)
 - Runden schreiben
 * Bewegen nach vorne/hinten (+ Validierung)

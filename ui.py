@@ -41,8 +41,10 @@ def print_battleships_map(game: Game):
     game.ingame_players[1].ships.append(Ship(4, 6, 9, 0, 0))
     game.ingame_players[1].ships.append(Ship(4, 7, 10, 2, 2))
     game.ingame_players[1].ships.append(Ship(2, 5, 5, 5, 6))
+    game.ingame_players[1].ships[-1].remaining_visibility_rounds = 2
+
     game.ingame_players[0].missed_shots.append((3, 3))
-    game.ingame_players[0].missed_shots.append((4, 4))
+    game.ingame_players[0].missed_shots.append((5, 5))
     game.ingame_players[0].missed_shots.append((9, 9))
 
     # find the current player (object)
@@ -252,8 +254,9 @@ def print_map_infos_with_grid(
                 )
 
     # get BASIC VALUES
-    total_width: int = len(ship_positions_current_player)
-    total_height: int = len(ship_positions_current_player[0])
+    total_width: int = len(ship_positions_current_player[0])
+    total_height: int = len(ship_positions_current_player)
+    print("TOTAL HEIGHT", total_height)
 
     # PRINT the map
     borders_rgb: tuple = COLORS.GRAY5.value
@@ -261,24 +264,81 @@ def print_map_infos_with_grid(
 
     # Output partly generated, see SOURCES [3] -->
     # Column headers (A to Z)
-    column_headers = "   ".join(string.ascii_uppercase[i] for i in range(total_width))
-    styled_print("     " + column_headers, rgb_tuple=info_letters_rgb)
+    column_headers = "  ".join(string.ascii_uppercase[i] for i in range(total_width))
+    styled_print("      " + column_headers, rgb_tuple=info_letters_rgb)
 
     # Top border
-    styled_print("   " + "----" * total_width + "-", rgb_tuple=borders_rgb)
+    styled_print("    " + "---" * total_width + "-", rgb_tuple=borders_rgb)
 
-    for row in range(total_width):
-        styled_print(f"{row+1:02} | ", end="", rgb_tuple=borders_rgb)
+    for row in range(total_height):
+        styled_print(f" {row+1:02} | ", end="", rgb_tuple=borders_rgb)
 
-        # REDO: Hier weitermachen --------------------------
+        for col in range(total_width):
+            # set foreground color and value for the tile based on the maps
+            tile_symbol: str = "."
+            tile_rgb_color: tuple
 
-        # for col in range(total_height):
-        #     if
-        #     styled_print(f" {} ")
+            # case: current player's ship
+            if ship_positions_current_player[row][col] != 0:
+                __ship_hp_rel: int = ship_hps_current_player[row][col]
+                tile_symbol = str(ship_positions_current_player[row][col])
+
+                if __ship_hp_rel <= 0:
+                    tile_rgb_color = COLORS.GREEN_DESTROYED.value
+                elif __ship_hp_rel > 0 and __ship_hp_rel < 0.25:
+                    tile_rgb_color = COLORS.GREEN_CRITICAL_HEALTH.value
+                elif __ship_hp_rel >= 0.25 and __ship_hp_rel < 0.50:
+                    tile_rgb_color = COLORS.GREEN_LOW_HEALTH.value
+                elif __ship_hp_rel >= 0.50 and __ship_hp_rel < 0.75:
+                    tile_rgb_color = COLORS.GREEN_MEDIUM_HEALTH.value
+                elif __ship_hp_rel >= 0.75 and __ship_hp_rel < 1:
+                    tile_rgb_color = COLORS.GREEN_HIGH_HEALTH.value
+                else:
+                    tile_rgb_color = COLORS.GREEN_FULL_HEALTH.value
+
+            # case: other player's ship
+            elif ship_positions_other_player[row][col] != 0:
+                __ship_hp_rel: int = ship_hps_other_player[row][col]
+                tile_symbol = str(ship_positions_other_player[row][col])
+
+                if __ship_hp_rel <= 0:
+                    tile_rgb_color = COLORS.RED_DESTROYED.value
+                elif __ship_hp_rel > 0 and __ship_hp_rel < 0.25:
+                    tile_rgb_color = COLORS.RED_CRITICAL_HEALTH.value
+                elif __ship_hp_rel >= 0.25 and __ship_hp_rel < 0.50:
+                    tile_rgb_color = COLORS.RED_LOW_HEALTH.value
+                elif __ship_hp_rel >= 0.50 and __ship_hp_rel < 0.75:
+                    tile_rgb_color = COLORS.RED_MEDIUM_HEALTH.value
+                elif __ship_hp_rel >= 0.75 and __ship_hp_rel < 1:
+                    tile_rgb_color = COLORS.RED_HIGH_HEALTH.value
+                else:
+                    tile_rgb_color = COLORS.RED_FULL_HEALTH.value
+
+            # case: missed attack on the tile
+            elif missed_shots_current_player[row][col] != 0:
+                __missed_shots: int = missed_shots_current_player[row][col]
+                tile_symbol = "x"
+
+                if __missed_shots == 1:
+                    tile_rgb_color = COLORS.WATER_MISSED_ONCE.value
+                elif __missed_shots == 2:
+                    tile_rgb_color = COLORS.WATER_MISSED_TWICE.value
+                else:
+                    tile_rgb_color = COLORS.WATER_MISSED_OFTEN.value
+
+            # case: no information available (water)
+            else:
+                tile_symbol = "."
+                tile_rgb_color = COLORS.WATER_BASE.value
+
+            styled_print(str(tile_symbol) + "  ", rgb_tuple=tile_rgb_color, end="")
+
+        print()
 
         # Print row with side borders and row headers (01 to 10)
-        print(f"{ship_row+1:02} | " + " | ".join(str(cell) for cell in row) + " |")
-        print("   " + ("----" * total_width) + "-")  # Row separator
+        # print(f"{ship_row+1:02} | " + " | ".join(str(cell) for cell in row) + " |")
+
+    print("   " + ("----" * total_width) + "-")  # Row separator
 
     # --> partly generated Output until here, see SOURCES [3]
 

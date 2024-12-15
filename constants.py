@@ -1,45 +1,28 @@
 from enum import Enum
 
 
-from enum import Enum
-
-
 class COLORS(Enum):
-    # Dark Green to Light Green
-    GREEN0 = (0, 100, 0)
-    GREEN1 = (0, 125, 0)
-    GREEN2 = (0, 150, 0)
-    GREEN3 = (0, 175, 0)
-    GREEN4 = (0, 200, 0)
-    GREEN5 = (0, 225, 0)
-    GREEN6 = (0, 250, 0)
-    GREEN7 = (50, 255, 50)
-    GREEN8 = (100, 255, 100)
-    GREEN9 = (150, 255, 150)
+    # GREEN HEALTH
+    GREEN_FULL_HEALTH = (30, 255, 30)  # Full health (100%)
+    GREEN_HIGH_HEALTH = (75, 255, 75)  # High health (>75%)
+    GREEN_MEDIUM_HEALTH = (110, 255, 110)  # Medium health (>50%)
+    GREEN_LOW_HEALTH = (80, 180, 80)  # Low health (<50%)
+    GREEN_CRITICAL_HEALTH = (40, 140, 40)  # Critical health (<25%)
+    GREEN_DESTROYED = (100, 130, 100)  # Destroyed (0%)
 
-    # Strong/Dark Red to Orange/Yellow
-    RED0 = (255, 0, 0)
-    RED1 = (255, 25, 0)
-    RED2 = (255, 50, 0)
-    RED3 = (255, 75, 0)
-    RED4 = (255, 100, 0)
-    RED5 = (255, 125, 0)
-    RED6 = (255, 150, 0)
-    RED7 = (255, 175, 0)
-    RED8 = (255, 200, 0)
-    RED9 = (255, 225, 0)
+    # RED HEALTH
+    RED_FULL_HEALTH = (255, 0, 0)  # Full health (100%)
+    RED_HIGH_HEALTH = (255, 50, 0)  # High health (>75%)
+    RED_MEDIUM_HEALTH = (255, 100, 0)  # Medium health (>50%)
+    RED_LOW_HEALTH = (255, 150, 0)  # Low health (<50%)
+    RED_CRITICAL_HEALTH = (255, 190, 0)  # Critical health (<25%)
+    RED_DESTROYED = (120, 100, 100)  # Destroyed (0%)
 
-    # Dark Blue to Light Blue
-    BLUE0 = (0, 0, 255)
-    BLUE1 = (20, 20, 255)
-    BLUE2 = (40, 40, 255)
-    BLUE3 = (60, 60, 255)
-    BLUE4 = (80, 80, 255)
-    BLUE5 = (100, 100, 255)
-    BLUE6 = (120, 120, 255)
-    BLUE7 = (140, 140, 255)
-    BLUE8 = (160, 160, 255)
-    BLUE9 = (180, 180, 255)
+    # WATER / MISSED
+    WATER_BASE = (180, 180, 255)
+    WATER_MISSED_ONCE = (80, 80, 255)
+    WATER_MISSED_TWICE = (60, 60, 255)
+    WATER_MISSED_OFTEN = (40, 40, 255)
 
     # White to Dark Gray
     GRAY0 = (255, 255, 255)
