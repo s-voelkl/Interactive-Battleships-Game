@@ -32,7 +32,7 @@ def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
 def update_ui(game: Game):
     clear_console_window()
     styled_print(
-        "INTERACTIVE BATTLESHIPS GAME\n\n",
+        f"INTERACTIVE BATTLESHIPS GAME - {game.current_player}\n\n",
         rgb_tuple=COLORS.WATER_MISSED_OFTEN.value,
     )
     print_battleships_map(game)
@@ -108,8 +108,7 @@ def print_battleships_map(game: Game):
                 lower_pos = min(ship.position_start_h, ship.position_end_h)
                 higher_pos = max(ship.position_start_h, ship.position_end_h)
 
-                # for h in range(lower_pos, higher_pos + 1):
-                for h in range(ship.position_start_h, ship.position_end_h + 1):
+                for h in range(lower_pos, higher_pos + 1):
                     # set position (value = ship lenth) and HP there
                     ship_positions_anon[ship.position_start_v][h] = ship.ship_length
                     ship_hps_anon[ship.position_start_v][h] = (
@@ -121,8 +120,7 @@ def print_battleships_map(game: Game):
                 lower_pos = min(ship.position_start_v, ship.position_end_v)
                 higher_pos = max(ship.position_start_v, ship.position_end_v)
 
-                # for v in range(lower_pos, higher_pos + 1):
-                for v in range(ship.position_start_v, ship.position_end_v + 1):
+                for v in range(lower_pos, higher_pos + 1):
                     # set position (value = ship lenth) and HP there
                     ship_positions_anon[v][ship.position_start_h] = ship.ship_length
                     ship_hps_anon[v][ship.position_start_h] = (
@@ -154,11 +152,12 @@ def print_battleships_map(game: Game):
         # missed_shots_current_player,
     ]
 
-    for i, map in enumerate(maps):
-        print("Map: ", i + 1)
-        for row in map:
-            print(row)
-        print()
+    # redo
+    # for i, map in enumerate(maps):
+    #     print("Map: ", i + 1)
+    #     for row in map:
+    #         print(row)
+    #     print()
 
     # print the map using all of the values.
     print_map_infos_with_grid(

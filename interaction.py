@@ -33,7 +33,7 @@ def setup_ship_positions(game: Game):
         player_1_max_position_v,
     )
     update_turn(game)
-    game.debug_display_game_props()
+    game.debug_display_game_props()  # redo
 
     # 2nd player
     __place_multiple_ships_on_map(
@@ -112,7 +112,7 @@ def __place_multiple_ships_on_map(
                         [game.current_player],
                     )
                     update_ui(game)
-                    game.debug_display_game_props()
+                    game.debug_display_game_props()  # redo
 
                     # Horizontal position (normally A - X)
                     while not valid_input and not reset_actions:
@@ -270,7 +270,9 @@ def __place_multiple_ships_on_map(
                         ship_end_position_v = ship_start_position_v
 
                     # validate that the end positions are in the min/max horizontal/vertical positions
-                    if not (min_position_h <= ship_end_position_h <= max_position_h):
+                    if not (
+                        min_position_h <= ship_end_position_h <= max_position_h
+                    ) or not (min_position_v <= ship_end_position_v <= max_position_v):
                         game.add_log_message(
                             f"Die Position des Schiffs {ship.title} ist nicht valide, da es"
                             + " außerhalb der zulässigen Grenzen gesetzt wurde.",
