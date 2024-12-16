@@ -1,6 +1,7 @@
 from enum import Enum
 
 
+# Colors and Styles adjusted in coorporation with Bing Chat, see SOURCES [6] -->
 class COLORS(Enum):
     # GREEN HEALTH
     GREEN_FULL_HEALTH = (30, 255, 30)  # Full health (100%)
@@ -25,16 +26,19 @@ class COLORS(Enum):
     WATER_MISSED_OFTEN = (40, 40, 255)
 
     # White to Dark Gray
-    GRAY0 = (255, 255, 255)
-    GRAY1 = (240, 240, 240)
-    GRAY2 = (225, 225, 225)
-    GRAY3 = (210, 210, 210)
-    GRAY4 = (195, 195, 195)
-    GRAY5 = (180, 180, 180)
-    GRAY6 = (165, 165, 165)
-    GRAY7 = (150, 150, 150)
-    GRAY8 = (135, 135, 135)
-    GRAY9 = (120, 120, 120)
+    GRAY_MAP_BORDER = (180, 180, 180)
+    GRAY_MAP_LETTERS = (210, 210, 210)
+    GRAY_LOG_MESSAGES = (210, 210, 210)
+    # GRAY0 = (255, 255, 255)
+    # GRAY1 = (240, 240, 240)
+    # GRAY2 = (225, 225, 225)
+    # GRAY3 = (210, 210, 210)
+    # GRAY4 = (195, 195, 195)
+    # GRAY5 = (180, 180, 180)
+    # GRAY6 = (165, 165, 165)
+    # GRAY7 = (150, 150, 150)
+    # GRAY8 = (135, 135, 135)
+    # GRAY9 = (120, 120, 120)
 
 
 class STYLES(Enum):
@@ -44,3 +48,6 @@ class STYLES(Enum):
     # THIN = "\033[2m"
     # BLINK = "\033[5m"
     # ITALIC = "\033[3m"
+
+
+# --> Colors and Styles adjusted in coorporation with Bing Chat, see SOURCES [6]

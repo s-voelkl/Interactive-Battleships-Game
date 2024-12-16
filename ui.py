@@ -1,60 +1,60 @@
 from schema import *
+from typing import List
 import datetime as dt
 import os
-import random
 import string
 from constants import *
 
 
-def print_log_messages(game: Game, related_player: str):
-    for log_message in game.log_messages:
+def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
+    for log_message in game.log_messages[-max_messages:]:
         if not (
             len(log_message.related_players) == 0
             or (related_player in log_message.related_players)
             or game.current_player == ""
         ):
-            print("continue!")
             continue
 
         datetime_formatted: str = (
-            str(log_message.time.hour)
-            + ":"
-            + str(log_message.time.minute)
-            + ":"
-            + str(log_message.time.second)
+            f"{log_message.time.hour:02}:{log_message.time.minute:02}:{log_message.time.second:02}"
         )
 
-        print(datetime_formatted, log_message.text, log_message.related_players)
+        styled_print(
+            datetime_formatted
+            + " "
+            + log_message.text
+            + " "
+            + str(log_message.related_players),
+            rgb_tuple=COLORS.GRAY_LOG_MESSAGES.value,
+        )
 
 
 def update_ui(game: Game):
     clear_console_window()
+    styled_print(
+        "INTERACTIVE BATTLESHIPS GAME\n\n",
+        rgb_tuple=COLORS.WATER_MISSED_OFTEN.value,
+    )
     print_battleships_map(game)
+    styled_print("\nNachrichten:", rgb_tuple=COLORS.GRAY_LOG_MESSAGES.value)
     print_log_messages(game, game.current_player)
 
 
 def print_battleships_map(game: Game):
 
     # test. REDO
-    game.ingame_players[0].ships.append(Ship(5, 0, 4, 0, 0))
-    game.ingame_players[0].ships.append(Ship(2, 0, 1, 9, 9))
-    game.ingame_players[1].ships.append(Ship(4, 6, 9, 0, 0))
-    game.ingame_players[1].ships.append(Ship(4, 7, 10, 2, 2))
-    game.ingame_players[1].ships.append(Ship(2, 5, 5, 5, 6))
-    game.ingame_players[1].ships[-1].remaining_visibility_rounds = 2
-
-    game.ingame_players[0].missed_shots.append((3, 3))
-    game.ingame_players[0].missed_shots.append((5, 5))
-    game.ingame_players[0].missed_shots.append((9, 9))
+    # game.ingame_players[0].ships.append(Ship(5, 0, 4, 0, 0))
+    # game.ingame_players[0].ships.append(Ship(2, 0, 1, 9, 9))
+    # game.ingame_players[1].ships.append(Ship(4, 6, 9, 0, 0))
+    # game.ingame_players[1].ships.append(Ship(4, 7, 10, 2, 2))
+    # game.ingame_players[1].ships.append(Ship(2, 5, 5, 5, 6))
+    # game.ingame_players[1].ships[-1].remaining_visibility_rounds = 2
+    # game.ingame_players[0].missed_shots.append((3, 3))
+    # game.ingame_players[0].missed_shots.append((5, 5))
+    # game.ingame_players[0].missed_shots.append((9, 9))
 
     # find the current player (object)
-    current_player: Player = None
-    if game.current_player == None:
-        raise Exception("Internal Error: Current player is not available!")
-
-    for player in game.ingame_players:
-        if player.name == game.current_player:
-            current_player = player
+    current_player: Player = game.get_current_player_object()
 
     # Initialize the 2D lists with zeros
     ship_positions_current_player = [
@@ -91,16 +91,16 @@ def print_battleships_map(game: Game):
             for _ in range(game.total_board_height)
         ]
         for ship in player.ships:
-            # determine if ship is from other player and visible --> continue
+            # determine if ship is from other player and visible
             if (player.name != game.current_player) and not (
                 ship_is_visible(current_player.ships, ship)
             ):
                 # testing - REDO
-                print("Ship from other player is not visible -> skip!")
-                print(
-                    f"  Ship infos: Length {ship.ship_length}, Horizontal: {ship.position_start_h} - {ship.position_end_h},"
-                    + f" Vertical: {ship.position_start_v} - {ship.position_end_v}"
-                )
+                # print("Ship from other player is not visible -> skip!")
+                # print(
+                #     f"  Ship infos: Length {ship.ship_length}, Horizontal: {ship.position_start_h} - {ship.position_end_h},"
+                #     + f" Vertical: {ship.position_start_v} - {ship.position_end_v}"
+                # )
                 continue
 
             # Vertical ship
@@ -108,7 +108,8 @@ def print_battleships_map(game: Game):
                 lower_pos = min(ship.position_start_h, ship.position_end_h)
                 higher_pos = max(ship.position_start_h, ship.position_end_h)
 
-                for h in range(lower_pos, higher_pos + 1):
+                # for h in range(lower_pos, higher_pos + 1):
+                for h in range(ship.position_start_h, ship.position_end_h + 1):
                     # set position (value = ship lenth) and HP there
                     ship_positions_anon[ship.position_start_v][h] = ship.ship_length
                     ship_hps_anon[ship.position_start_v][h] = (
@@ -120,6 +121,7 @@ def print_battleships_map(game: Game):
                 lower_pos = min(ship.position_start_v, ship.position_end_v)
                 higher_pos = max(ship.position_start_v, ship.position_end_v)
 
+                # for v in range(lower_pos, higher_pos + 1):
                 for v in range(ship.position_start_v, ship.position_end_v + 1):
                     # set position (value = ship lenth) and HP there
                     ship_positions_anon[v][ship.position_start_h] = ship.ship_length
@@ -148,8 +150,8 @@ def print_battleships_map(game: Game):
     # test: REDO
     maps: list[list[list]] = [
         ship_positions_current_player,
-        ship_positions_other_player,
-        missed_shots_current_player,
+        # ship_positions_other_player,
+        # missed_shots_current_player,
     ]
 
     for i, map in enumerate(maps):
@@ -256,22 +258,26 @@ def print_map_infos_with_grid(
     # get BASIC VALUES
     total_width: int = len(ship_positions_current_player[0])
     total_height: int = len(ship_positions_current_player)
-    print("TOTAL HEIGHT", total_height)
 
     # PRINT the map
-    borders_rgb: tuple = COLORS.GRAY5.value
-    info_letters_rgb: tuple = COLORS.GRAY5.value
+    borders_rgb: tuple = COLORS.GRAY_MAP_BORDER.value
+    info_letters_rgb: tuple = COLORS.GRAY_MAP_LETTERS.value
 
-    # Output partly generated, see SOURCES [3] -->
+    # Inspired by generated output, see SOURCES [3] -->
     # Column headers (A to Z)
     column_headers = "  ".join(string.ascii_uppercase[i] for i in range(total_width))
     styled_print("      " + column_headers, rgb_tuple=info_letters_rgb)
 
     # Top border
-    styled_print("    " + "---" * total_width + "-", rgb_tuple=borders_rgb)
+    styled_print("    " + "---" * total_width + "--", rgb_tuple=borders_rgb)
 
     for row in range(total_height):
-        styled_print(f" {row+1:02} | ", end="", rgb_tuple=borders_rgb)
+        # # better readability
+        # if ((row) % 10 == 0) and total_height > (row + 1) and row != 0:
+        #     styled_print("    |" + " " * total_width * 3 + "|", borders_rgb)
+
+        styled_print(f" {row+1:02} |", end="", rgb_tuple=borders_rgb)
+        # --> inspired by generated Output until here, see SOURCES [3]
 
         for col in range(total_width):
             # set foreground color and value for the tile based on the maps
@@ -331,16 +337,10 @@ def print_map_infos_with_grid(
                 tile_symbol = "."
                 tile_rgb_color = COLORS.WATER_BASE.value
 
-            styled_print(str(tile_symbol) + "  ", rgb_tuple=tile_rgb_color, end="")
+            styled_print(" " + str(tile_symbol) + " ", rgb_tuple=tile_rgb_color, end="")
 
-        print()
-
-        # Print row with side borders and row headers (01 to 10)
-        # print(f"{ship_row+1:02} | " + " | ".join(str(cell) for cell in row) + " |")
-
-    print("   " + ("----" * total_width) + "-")  # Row separator
-
-    # --> partly generated Output until here, see SOURCES [3]
+        styled_print("|", borders_rgb)
+    styled_print("    " + ("---" * total_width) + "--", borders_rgb)
 
 
 def styled_print(

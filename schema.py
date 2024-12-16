@@ -67,12 +67,12 @@ class LogMessage:
     def __init__(
         self,
         text: str,
+        time: datetime = None,
         related_players: List[Player] = [],
-        time=datetime.now(),
     ):
-        self.related_players = related_players
         self.text = text
-        self.time = time
+        self.time = time if time is not None else datetime.now()
+        self.related_players = related_players
 
 
 class Game:
@@ -218,3 +218,11 @@ class Game:
             print()
 
         print()
+
+    def get_current_player_object(self) -> Player:
+        if self.current_player == None:
+            raise Exception("Internal Error: Current player is not available!")
+
+        for player in self.ingame_players:
+            if player.name == self.current_player:
+                return player

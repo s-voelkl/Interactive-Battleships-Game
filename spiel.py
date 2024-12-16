@@ -1,12 +1,12 @@
 from schema import *
-from game_functions import *
 from ui import *
 import time
+from interaction import *
 
 
 def startup():
     clear_console_window()
-    print("Battleships Game is starting...")
+    ("Battleships Game is starting...")
 
     # color and style activation
     os.system("")
@@ -17,6 +17,10 @@ def startup():
     # start game
     game: Game = Game()
     game.set_quick_start_settings()
+    update_ui(game)
+
+    # setup ships
+    setup_ship_positions(game)
     update_ui(game)
 
     game.debug_display_game_props()

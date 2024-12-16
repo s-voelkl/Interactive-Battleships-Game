@@ -17,7 +17,10 @@ IN CASE OF BUGS:
 
 
 TODO:
+- Schiffe nach Norden platziert können nicht gedisplayed werden!
+- reset testen
 - Schiffsverteilung zu Spielbeginn schreiben (dynamisch, inkl. rückgängig-option)
+- Log messages haben immer die aktuelle Zeit!
 - Runden schreiben
 * Bewegen nach vorne/hinten (+ Validierung)
 * drehen um die Achse (+ Validierung, selbe, wie Bewegung)
@@ -124,3 +127,11 @@ SOURCES:
     styled_print("Hello, World!", (255, 0, 0), bold=True, underline=True)
 
 [5]: Overview about ANSI escape sequences: stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
+
+[6]: Colors and Styles were adjusted together with Bing Chat in multiple prompts.
+    PROMPTS:
+    - Generation of green, red, blue and gray rgb colors.
+    - Changes of colors (steps smaller/bigger, darker, lighter, mixes with other colors)
+    - rename of the colors to the health-levels (from 0 to 100%, translated into relative health)
+    ANSWER: 
+    see constants -> COLORS and STYLES
