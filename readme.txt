@@ -17,14 +17,11 @@ IN CASE OF BUGS:
 
 
 TODO:
-- Schiffe nach Norden platziert können nicht gedisplayed werden!
-- reset testen
-- Schiffsverteilung zu Spielbeginn schreiben (dynamisch, inkl. rückgängig-option)
-- Log messages haben immer die aktuelle Zeit!
 - Runden schreiben
 * Bewegen nach vorne/hinten (+ Validierung)
 * drehen um die Achse (+ Validierung, selbe, wie Bewegung)
 * Angreifen mit Schiff auf Feld (inkl. Trefferwahrscheinlichkeit, Anzahl der Schüsse, HP-Anpassung, Sichtanpassung)
+
 - evtl. Zusatz:
 * Rammen
 * Kritische Treffer (+Wahrscheinlichkeit)

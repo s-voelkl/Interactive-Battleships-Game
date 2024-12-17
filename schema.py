@@ -57,6 +57,15 @@ class Player:
         self.ships = []
         self.missed_shots = []
 
+    def count_own_destroyed_ships(self) -> int:
+        destroyed_ships: int = 0
+
+        for ship in self.ships:
+            if ship.current_hp <= 0:
+                destroyed_ships += 1
+
+        return destroyed_ships
+
 
 class LogMessage:
     text: str

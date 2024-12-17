@@ -7,6 +7,8 @@ from constants import *
 
 
 def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
+    styled_print("\nNachrichten:", rgb_tuple=COLORS.LOG_MESSAGES.value)
+
     for log_message in game.log_messages[-max_messages:]:
         if not (
             len(log_message.related_players) == 0
@@ -25,18 +27,34 @@ def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
             + log_message.text
             + " "
             + str(log_message.related_players),
-            rgb_tuple=COLORS.GRAY_LOG_MESSAGES.value,
+            rgb_tuple=COLORS.LOG_MESSAGES.value,
         )
 
 
 def update_ui(game: Game):
     clear_console_window()
+
     styled_print(
-        f"INTERACTIVE BATTLESHIPS GAME - {game.current_player}\n\n",
-        rgb_tuple=COLORS.WATER_MISSED_OFTEN.value,
+        f"INTERACTIVE BATTLESHIPS GAME\n",
+        rgb_tuple=COLORS.GAME_INFO.value,
     )
+
+    for player in game.ingame_players:
+        text: str = (
+            f"- {player.name}: \tSchiffe: {game.total_ships_per_player - player.count_own_destroyed_ships():02}"
+            + f"/{game.total_ships_per_player} \t\tSiege: {player.games_won}"
+        )
+
+        if player.name == game.current_player:
+            text += "\t<-- Zug"
+
+        styled_print(
+            text,
+            rgb_tuple=COLORS.GAME_INFO.value,
+        )
+
+    print("\n")
     print_battleships_map(game)
-    styled_print("\nNachrichten:", rgb_tuple=COLORS.GRAY_LOG_MESSAGES.value)
     print_log_messages(game, game.current_player)
 
 
@@ -146,11 +164,11 @@ def print_battleships_map(game: Game):
             ship_hps_other_player = ship_hps_anon.copy()
 
     # test: REDO
-    maps: list[list[list]] = [
-        ship_positions_current_player,
-        # ship_positions_other_player,
-        # missed_shots_current_player,
-    ]
+    # maps: list[list[list]] = [
+    #     ship_positions_current_player,
+    #     ship_positions_other_player,
+    #     missed_shots_current_player,
+    # ]
 
     # redo
     # for i, map in enumerate(maps):
@@ -259,8 +277,8 @@ def print_map_infos_with_grid(
     total_height: int = len(ship_positions_current_player)
 
     # PRINT the map
-    borders_rgb: tuple = COLORS.GRAY_MAP_BORDER.value
-    info_letters_rgb: tuple = COLORS.GRAY_MAP_LETTERS.value
+    borders_rgb: tuple = COLORS.MAP_BORDER.value
+    info_letters_rgb: tuple = COLORS.MAP_LETTERS.value
 
     # Inspired by generated output, see SOURCES [3] -->
     # Column headers (A to Z)

@@ -25,20 +25,13 @@ class COLORS(Enum):
     WATER_MISSED_TWICE = (60, 60, 255)
     WATER_MISSED_OFTEN = (40, 40, 255)
 
-    # White to Dark Gray
-    GRAY_MAP_BORDER = (180, 180, 180)
-    GRAY_MAP_LETTERS = (210, 210, 210)
-    GRAY_LOG_MESSAGES = (210, 210, 210)
-    # GRAY0 = (255, 255, 255)
-    # GRAY1 = (240, 240, 240)
-    # GRAY2 = (225, 225, 225)
-    # GRAY3 = (210, 210, 210)
-    # GRAY4 = (195, 195, 195)
-    # GRAY5 = (180, 180, 180)
-    # GRAY6 = (165, 165, 165)
-    # GRAY7 = (150, 150, 150)
-    # GRAY8 = (135, 135, 135)
-    # GRAY9 = (120, 120, 120)
+    # BORDERS
+    MAP_BORDER = (180, 180, 180)
+    MAP_LETTERS = (210, 210, 210)
+
+    # MESSAGES, GAME HEADER
+    LOG_MESSAGES = (210, 210, 210)
+    GAME_INFO = (40, 40, 255)
 
 
 class STYLES(Enum):

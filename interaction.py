@@ -24,30 +24,70 @@ def setup_ship_positions(game: Game):
     print(player_1_min_position_v)
     print(player_1_max_position_v)
 
+    # REDO AUTO PLACEMENT
+    print("REDO AUTO PLACEMENT!")
+
     # 1st player
-    __place_multiple_ships_on_map(
-        game,
-        player_1_min_position_h,
-        player_1_max_position_h,
-        player_1_min_position_v,
-        player_1_max_position_v,
-    )
-    update_turn(game)
-    game.debug_display_game_props()  # redo
+    # __place_multiple_ships_on_map(
+    #     game,
+    #     player_1_min_position_h,
+    #     player_1_max_position_h,
+    #     player_1_min_position_v,
+    #     player_1_max_position_v,
+    # )
+    # update_current_player(game)
+    # game.debug_display_game_props()  # redo
 
-    # 2nd player
-    __place_multiple_ships_on_map(
-        game,
-        player_2_min_position_h,
-        player_2_max_position_h,
-        player_2_min_position_v,
-        player_2_max_position_v,
-    )
-    update_turn(game)
-    pass
+    # # 2nd player
+    # __place_multiple_ships_on_map(
+    #     game,
+    #     player_2_min_position_h,
+    #     player_2_max_position_h,
+    #     player_2_min_position_v,
+    #     player_2_max_position_v,
+    # )
+    # update_current_player(game)
+
+    game.ingame_players[0].ships = [
+        Ship(5, 0, 4, 0, 0),
+        Ship(4, 0, 3, 2, 2),
+        Ship(4, 1, 4, 4, 4),  # H 1-4, V 4-4
+        Ship(3, 3, 1, 6, 6),
+        Ship(3, 5, 5, 9, 7),
+        Ship(3, 9, 7, 5, 5),
+        Ship(2, 9, 9, 9, 8),
+        Ship(2, 2, 1, 9, 9),
+        Ship(2, 8, 7, 0, 0),
+        Ship(2, 9, 8, 3, 3),
+    ]
+    update_ui(game)
+    time.sleep(0.25)
+    update_current_player(game)
+    update_ui(game)
+
+    game.ingame_players[1].ships = [
+        Ship(5, 14, 18, 0, 0),
+        Ship(4, 14, 17, 2, 2),
+        Ship(4, 15, 18, 4, 4),
+        Ship(3, 16, 18, 6, 6),
+        Ship(3, 19, 21, 9, 9),
+        Ship(3, 22, 20, 5, 5),
+        Ship(2, 23, 23, 9, 8),
+        Ship(2, 16, 15, 9, 9),
+        Ship(2, 21, 20, 0, 0),
+        Ship(2, 23, 22, 3, 3),
+    ]
+
+    update_ui(game)
+    time.sleep(0.25)
+    update_current_player(game)
+    update_ui(game)
+    game.add_log_message("Ships of players were set! (DEBUG)")
+
+    # redo until here. for testing!
 
 
-def update_turn(game: Game):
+def update_current_player(game: Game):
 
     player_names: List[str] = []
     for player in game.ingame_players:
@@ -56,7 +96,7 @@ def update_turn(game: Game):
     player_names.remove(game.current_player)
 
     # set new player, tell with messages
-    game.add_log_message(f"It's the turn of {player_names[0]}!\n", [])
+    game.add_log_message(f"{player_names[0]} ist am Zug!\n")
     update_ui(game)
 
     # REDO!
@@ -370,3 +410,12 @@ def validate_ship_placement(
                             return False
 
     return True
+
+
+def take_turn(game: Game):
+    game.add_log_message(f"{game.current_player} ist am Zug!")
+
+    time.sleep(1)  # redo
+    game.add_log_message(
+        f"Zug des Spielers {game.current_player} is beendet!", [game.current_player]
+    )
