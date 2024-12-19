@@ -17,7 +17,6 @@ IN CASE OF BUGS:
 
 
 TODO:
-- Runden schreiben
 * Bewegen nach vorne/hinten (+ Validierung)
 * drehen um die Achse (+ Validierung, selbe, wie Bewegung)
 * Angreifen mit Schiff auf Feld (inkl. Trefferwahrscheinlichkeit, Anzahl der Schüsse, HP-Anpassung, Sichtanpassung)
