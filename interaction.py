@@ -420,95 +420,165 @@ def take_turn(game: Game):
     current_player: Player = game.get_current_player_object()
     valid_input: bool = False
     chosen_ship: Ship = None
+    ship_action: int = 0
+    
 
-    game.add_log_message(
-        f"{game.current_player} ist am Zug. Bitte Schiff für Aktion auswählen [sortiert nach Platzierung].",
-        [game.current_player],
-    )
-    update_ui(game)
+    styled_print(f"{game.current_player} ist am Zug.", rgb_tuple=COLORS.LOG_MESSAGES.value)
+    
+    reset_ship_selection: bool = True
+    
+    while reset_ship_selection:
+        styled_print(
+            f"Bitte Schiff für Aktion auswählen [sortiert nach Platzierung]", 
+            rgb_tuple=COLORS.LOG_MESSAGES.value
+        )
 
-    # Selecting a ship for the turn. Must have >0 hp
-    # the not anymore existing ships are not displayed but block their original enumerated number in the list.
-    #   this helps the user.
-    for i, ship in enumerate(current_player.ships):
-        if ship.current_hp > 0:
-            print(
-                f" [{i + 1}]\t{ship.ship_length}er Schiff\t mit {ship.current_hp} HP bei horizontal {string.ascii_uppercase[ship.position_start_h]}"
-                + f" und vertikal {ship.position_start_v + 1},\tnoch sichtbar für {ship.remaining_visibility_rounds} Runden."
-            )
+        # Selecting a ship for the turn. Must have >0 hp
+        # the not anymore existing ships are not displayed but block their original enumerated number in the list.
+        #   this helps the user.
+        for i, ship in enumerate(current_player.ships):
+            if ship.current_hp > 0:
+                styled_print(
+                    f" [{i + 1}]\t{ship.ship_length}er Schiff\t mit {ship.current_hp} HP bei horizontal {string.ascii_uppercase[ship.position_start_h]}"
+                    + f" und vertikal {ship.position_start_v + 1},\tnoch sichtbar für {ship.remaining_visibility_rounds} Runden.", 
+                    rgb_tuple=COLORS.LOG_MESSAGES.value
+                )
 
-    # choose a ship for the turn, by player input
-    valid_input: bool = False
-    while not valid_input:
-        try:
-            user_input: str = input(
-                f"Eingabe für Schiff [{1} - {game.total_ships_per_player}]: "
-            )
-            game.add_log_message(
-                f"Eingabe für Schiff: {user_input}",
-                [game.current_player],
-            )
-            update_ui(game)
-
-            if not user_input.isnumeric():
+        # choose a ship for the turn, by player input
+        valid_input: bool = False
+        while not valid_input:
+            try:
+                user_input: str = input(
+                    f"Eingabe für Schiff [{1} - {game.total_ships_per_player}]: "
+                )
                 game.add_log_message(
-                    "Der Wert muss eine Zahl sein!",
+                    f"Eingabe für Schiff: {user_input}",
                     [game.current_player],
                 )
                 update_ui(game)
+
+                if not user_input.isnumeric():
+                    game.add_log_message(
+                        "Der Wert muss eine Zahl sein!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                value: int = int(user_input) - 1
+
+                if not (0 <= value <= game.total_ships_per_player - 1):
+                    game.add_log_message(
+                        f"Der Wert muss zwischen {1} und {game.total_ships_per_player} liegen!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                if current_player.ships[value].current_hp <= 0:
+                    game.add_log_message(
+                        f"Das gewählte Schiff hat keine HP mehr und kann keine Aktion mehr ausführen!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                chosen_ship: Ship = current_player.ships[value]
+                valid_input = True
+
+            except Exception:
                 valid_input = False
-                continue
 
-            value: int = int(user_input) - 1
-
-            if not (0 <= value <= game.total_ships_per_player - 1):
+        game.add_log_message(
+            f"[{current_player.ships.index(chosen_ship) + 1}] ({ship.ship_length}er Schiff) ausgewählt. ",
+            [game.current_player],
+        )
+        update_ui(game)
+        
+        styled_print("Welche Aktion soll ausgeführt werden", rgb_tuple=COLORS.LOG_MESSAGES.value)
+        styled_print("[1]\tSchießen", rgb_tuple=COLORS.LOG_MESSAGES.value)
+        styled_print("[2]\tBewegen", rgb_tuple=COLORS.LOG_MESSAGES.value)
+        styled_print("[3]\tAnderes Schiff auswählen", rgb_tuple=COLORS.LOG_MESSAGES.value)
+        
+        # choose an action for the chosen ship
+        valid_input = False
+        while not valid_input:
+            try:
+                user_input: str = input(
+                    f"Eingabe für Aktion [1 = Schießen, 2 = Bewegen, 3 = Anderes Schiff]: "
+                )
                 game.add_log_message(
-                    f"Der Wert muss zwischen {1} und {game.total_ships_per_player} liegen!",
+                    f"Eingabe für Aktion: {user_input}",
                     [game.current_player],
                 )
                 update_ui(game)
+
+                if not user_input.isnumeric():
+                    game.add_log_message(
+                        "Der Wert muss eine Zahl sein!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                ship_action = int(user_input)
+
+                if not (1 <= ship_action <= 3):
+                    game.add_log_message(
+                        f"Der Wert muss zwischen 1 und 3 liegen!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                valid_input = True
+
+            except Exception:
                 valid_input = False
-                continue
+        
+        if ship_action == 1:
+            attack_with_ship(game, chosen_ship)
+        elif ship_action == 2:
+            move_ship(game, chosen_ship)
+        elif ship_action == 3:
+            reset_ship_selection = True
+            styled_print("Schiffauswahl zurückgesetzt.", rgb_tuple=COLORS.LOG_MESSAGES.value)
+            continue
+        else: 
+            raise Exception("Interner Fehler: Ungültige Aktion für Schiff ausgewählt.")
+        
+        break    
 
-            if current_player.ships[value].current_hp <= 0:
-                game.add_log_message(
-                    f"Das gewählte Schiff hat keine HP mehr und kann keine Aktion mehr ausführen!",
-                    [game.current_player],
-                )
-                update_ui(game)
-                valid_input = False
-                continue
-
-            chosen_ship: Ship = current_player.ships[value]
-            valid_input = True
-
-        except Exception:
-            valid_input = False
-
-    game.add_log_message(
-        f"[{current_player.ships.index(chosen_ship) + 1}] ({ship.ship_length}er Schiff) ausgewählt.",
-        [game.current_player],
-    )
-    update_ui(game)
-    attack_with_ship(game, chosen_ship)
-
-    # redo delete
-    game.add_log_message(
-        f"Zug des Spielers {game.current_player} is beendet!", [game.current_player]
-    )
-    update_ui(game)
+def move_ship(game: Game, ship: Ship):
+    game.add_log_message("MOVING SHIP")
+    pass #redo
 
 
 def attack_with_ship(game: Game, attacking_ship: Ship):
     # Player has attacks based on the current health of the ship.
-    for i in range(attacking_ship.current_hp):
+    attack_count: int = attacking_ship.current_hp
+    for i in range(attack_count):
+        if attacking_ship.current_hp <= 0:
+            game.add_log_message(
+                f"Dieses Schiff ist zerstört, der Zug ist beendet.",
+                [game.current_player],
+            )
+            update_ui(game)
+            break
+        
+        
         # Attacking
         valid_input: bool = False
         pos_h: int = 0
         pos_v: int = 0
 
         game.add_log_message(
-            f"Angriff {i + 1}/{attacking_ship.ship_length} mit diesem Schiff. Bitte Angriffsposition angeben.",
+            f"Angriff {i + 1}/{attack_count} mit diesem Schiff. Bitte Angriffsposition angeben.",
             [game.current_player],
         )
         update_ui(game)
@@ -602,7 +672,8 @@ def attack_with_ship(game: Game, attacking_ship: Ship):
             current_player.missed_shots.append((pos_h, pos_v))
         else:
             ship_was_hit: bool = determine_ship_hit(game, attacking_ship, attacked_ship)
-            attacked_ship.remaining_visibility_rounds += 1
+            if attacked_ship.remaining_visibility_rounds <= 1:
+                attacked_ship.remaining_visibility_rounds = 1
 
             # could be used later for critical hits
             damage_done: int = determine_hit_damage()
@@ -610,16 +681,17 @@ def attack_with_ship(game: Game, attacking_ship: Ship):
 
             if ship_was_hit and new_ship_hp > 0:
                 attacked_ship.current_hp = new_ship_hp
-
+                
                 hit_str = "kritisch" if damage_done > 1 else "einfach"
-
                 game.add_log_message(
                     f"Das Schiff bei horizontal {string.ascii_uppercase[attacked_ship.position_start_h]}"
                     + f" und vertikal {attacked_ship.position_start_v + 1} wurde {hit_str} getroffen!",
                     [],
                 )
             elif ship_was_hit and new_ship_hp <= 0:
+                attacked_ship.current_hp = new_ship_hp
                 attacked_ship.remaining_visibility_rounds += 1000000
+                
                 game.add_log_message(
                     f"Das Schiff bei horizontal {string.ascii_uppercase[attacked_ship.position_start_h]}"
                     + f" und vertikal {attacked_ship.position_start_v + 1} wurde versenkt!",
@@ -703,21 +775,11 @@ def determine_ship_hit(game: Game, attacking_ship: Ship, attacked_ship: Ship) ->
     random_number = random.random()
 
     # debug information
-    game.add_log_message(
-        f"ship_length_based_probability: {ship_length_based_probability}", []
-    )
-    game.add_log_message(
-        f"distance_based_probability: {distance_based_probability}", []
-    )
-    game.add_log_message(f"hp_based_probability: {hp_based_probability}", [])
-    game.add_log_message(f"probability_hit: {probability_hit}", [])
-    game.add_log_message(f"random_number: {random_number}", [])
-
-    print(f"ship_length_based_probability: {ship_length_based_probability}")
-    print(f"distance_based_probability: {distance_based_probability}")
-    print(f"hp_based_probability: {hp_based_probability}")
-    print(f"probability_hit: {probability_hit}")
-    print(f"random_number: {random_number}")
+    # print(f"ship_length_based_probability: {ship_length_based_probability}")
+    # print(f"distance_based_probability: {distance_based_probability}")
+    # print(f"hp_based_probability: {hp_based_probability}")
+    # print(f"probability_hit: {probability_hit}")
+    # print(f"random_number: {random_number}")
 
     if random_number <= probability_hit:
         return True
