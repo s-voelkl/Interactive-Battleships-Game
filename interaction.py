@@ -419,3 +419,5 @@ def take_turn(game: Game):
     game.add_log_message(
         f"Zug des Spielers {game.current_player} is beendet!", [game.current_player]
     )
+
+    # process:

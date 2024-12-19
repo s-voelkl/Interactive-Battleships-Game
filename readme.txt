@@ -26,6 +26,8 @@ TODO:
 * Kritische Treffer (+Wahrscheinlichkeit)
 * Erneutes Aufklärungsschüsse.
 
+- delete REDOs, delete test.py
+
 
 SOURCES:
 [1]: Clear CMD: stackoverflow.com/questions/517970/how-can-i-clear-the-interpreter-console
