@@ -9,14 +9,15 @@ from constants import *
 def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
     styled_print("\nNachrichten:", rgb_tuple=COLORS.LOG_MESSAGES.value)
 
-    for log_message in game.log_messages[-max_messages:]:
-        if not (
-            len(log_message.related_players) == 0
-            or (related_player in log_message.related_players)
-            or game.current_player == ""
-        ):
-            continue
-
+    visible_log_messages = [
+        log_message
+        for log_message in game.log_messages
+        if len(log_message.related_players) == 0
+        or (related_player in log_message.related_players)
+        or game.current_player == ""
+    ]
+    # print messages, but only print last ~20 (default)
+    for log_message in visible_log_messages[-max_messages:]:
         datetime_formatted: str = (
             f"{log_message.time.hour:02}:{log_message.time.minute:02}:{log_message.time.second:02}"
         )
@@ -156,8 +157,8 @@ def print_battleships_map(game: Game):
 
             # fill out missed shots of this player:
             for missed_shot in player.missed_shots:
-                pos_H, pos_V = missed_shot
-                missed_shots_current_player[pos_H][pos_V] += 1
+                pos_h, pos_v = missed_shot
+                missed_shots_current_player[pos_v][pos_h] += 1
 
         else:
             ship_positions_other_player = ship_positions_anon.copy()
@@ -169,7 +170,6 @@ def print_battleships_map(game: Game):
     #     ship_positions_other_player,
     #     missed_shots_current_player,
     # ]
-
     # redo
     # for i, map in enumerate(maps):
     #     print("Map: ", i + 1)
@@ -178,74 +178,6 @@ def print_battleships_map(game: Game):
     #     print()
 
     # print the map using all of the values.
-    print_map_infos_with_grid(
-        ship_positions_current_player,
-        ship_positions_other_player,
-        ship_hps_current_player,
-        ship_hps_other_player,
-        missed_shots_current_player,
-    )
-
-
-def ship_is_visible(
-    current_players_ships: List[Ship], other_players_ship: Ship
-) -> bool:
-    # True if the other players ship is still visible (e.g. after an attack?)
-    if other_players_ship.remaining_visibility_rounds > 0:
-        return True
-
-    # Check if any of the current player's ships are within 2 tiles of the other player's ship
-    for cp_ship in current_players_ships:
-        # exact positions of other players ship
-        op_ship_lower_pos_v = min(
-            other_players_ship.position_start_v, other_players_ship.position_end_v
-        )
-        op_ship_higher_pos_v = max(
-            other_players_ship.position_start_v, other_players_ship.position_end_v
-        )
-        op_ship_lower_pos_h = min(
-            other_players_ship.position_start_h, other_players_ship.position_end_h
-        )
-        op_ship_higher_pos_h = max(
-            other_players_ship.position_start_h, other_players_ship.position_end_h
-        )
-
-        # exact positions of current players ship
-        cp_ship_lower_pos_v = min(cp_ship.position_start_v, cp_ship.position_end_v)
-        cp_ship_higher_pos_v = max(cp_ship.position_start_v, cp_ship.position_end_v)
-        cp_ship_lower_pos_h = min(cp_ship.position_start_h, cp_ship.position_end_h)
-        cp_ship_higher_pos_h = max(cp_ship.position_start_h, cp_ship.position_end_h)
-
-        # go through every possible combination of ship alignment (also suitable for ships with length > 5!)
-        # vertical position - op
-        for v_op in range(op_ship_lower_pos_v, op_ship_higher_pos_v + 1):
-            # horizontal position - op
-            for h_op in range(op_ship_lower_pos_h, op_ship_higher_pos_h + 1):
-
-                # vertical position - cp
-                for v_cp in range(cp_ship_lower_pos_v, cp_ship_higher_pos_v + 1):
-                    # horizontal position - op
-                    for h_cp in range(cp_ship_lower_pos_h, cp_ship_higher_pos_h + 1):
-                        # get the absolute values (e.g. abs(-2) = 2)
-                        if (abs(v_op - v_cp) <= 2) and (abs(h_op - h_cp) <= 2):
-                            return True
-    return False
-
-
-def clear_console_window():
-    # Clears the console window (cmd) for Linux "clear" and Windows "cls"
-    # see SOURCES [1] -->
-    os.system("cls" if os.name == "nt" else "clear")
-    # --> see SOURCES [1]
-
-
-def print_map_infos_with_grid(
-    ship_positions_current_player: list,
-    ship_positions_other_player: list,
-    ship_hps_current_player: list,
-    ship_hps_other_player: list,
-    missed_shots_current_player: list,
-):
     # CHECK if there are conflicts
     # check if horizontal lengths are the same
     if len(ship_positions_current_player) != len(ship_positions_other_player):
@@ -358,6 +290,58 @@ def print_map_infos_with_grid(
 
         styled_print("|", borders_rgb)
     styled_print("    " + ("---" * total_width) + "--", borders_rgb)
+
+
+def ship_is_visible(
+    current_players_ships: List[Ship], other_players_ship: Ship
+) -> bool:
+    # True if the other players ship is still visible (e.g. after an attack?)
+    if other_players_ship.remaining_visibility_rounds > 0:
+        return True
+
+    # Check if any of the current player's ships are within 2 tiles of the other player's ship
+    for cp_ship in current_players_ships:
+        # exact positions of other players ship
+        op_ship_lower_pos_v = min(
+            other_players_ship.position_start_v, other_players_ship.position_end_v
+        )
+        op_ship_higher_pos_v = max(
+            other_players_ship.position_start_v, other_players_ship.position_end_v
+        )
+        op_ship_lower_pos_h = min(
+            other_players_ship.position_start_h, other_players_ship.position_end_h
+        )
+        op_ship_higher_pos_h = max(
+            other_players_ship.position_start_h, other_players_ship.position_end_h
+        )
+
+        # exact positions of current players ship
+        cp_ship_lower_pos_v = min(cp_ship.position_start_v, cp_ship.position_end_v)
+        cp_ship_higher_pos_v = max(cp_ship.position_start_v, cp_ship.position_end_v)
+        cp_ship_lower_pos_h = min(cp_ship.position_start_h, cp_ship.position_end_h)
+        cp_ship_higher_pos_h = max(cp_ship.position_start_h, cp_ship.position_end_h)
+
+        # go through every possible combination of ship alignment (also suitable for ships with length > 5!)
+        # vertical position - op
+        for v_op in range(op_ship_lower_pos_v, op_ship_higher_pos_v + 1):
+            # horizontal position - op
+            for h_op in range(op_ship_lower_pos_h, op_ship_higher_pos_h + 1):
+
+                # vertical position - cp
+                for v_cp in range(cp_ship_lower_pos_v, cp_ship_higher_pos_v + 1):
+                    # horizontal position - op
+                    for h_cp in range(cp_ship_lower_pos_h, cp_ship_higher_pos_h + 1):
+                        # get the absolute values (e.g. abs(-2) = 2)
+                        if (abs(v_op - v_cp) <= 2) and (abs(h_op - h_cp) <= 2):
+                            return True
+    return False
+
+
+def clear_console_window():
+    # Clears the console window (cmd) for Linux "clear" and Windows "cls"
+    # see SOURCES [1] -->
+    os.system("cls" if os.name == "nt" else "clear")
+    # --> see SOURCES [1]
 
 
 def styled_print(

@@ -34,13 +34,14 @@ class Ship:
         position_end_h: int,
         position_start_v: int,
         position_end_v: int,
+        current_hp: int = None,
     ):
         self.ship_length = ship_length
         self.position_start_h = position_start_h
         self.position_end_h = position_end_h
         self.position_start_v = position_start_v
         self.position_end_v = position_end_v
-        self.current_hp = ship_length
+        self.current_hp = ship_length if current_hp is None else current_hp
         self.remaining_visibility_rounds = 0
 
 

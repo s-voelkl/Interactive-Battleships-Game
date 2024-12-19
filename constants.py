@@ -4,11 +4,11 @@ from enum import Enum
 # Colors and Styles adjusted in coorporation with Bing Chat, see SOURCES [6] -->
 class COLORS(Enum):
     # GREEN HEALTH
-    GREEN_FULL_HEALTH = (30, 255, 30)  # Full health (100%)
-    GREEN_HIGH_HEALTH = (75, 255, 75)  # High health (>75%)
-    GREEN_MEDIUM_HEALTH = (110, 255, 110)  # Medium health (>50%)
-    GREEN_LOW_HEALTH = (80, 180, 80)  # Low health (<50%)
-    GREEN_CRITICAL_HEALTH = (40, 140, 40)  # Critical health (<25%)
+    GREEN_FULL_HEALTH = (58, 255, 30)  # Full health (100%)
+    GREEN_HIGH_HEALTH = (108, 255, 80)  # High health (>75%)
+    GREEN_MEDIUM_HEALTH = (148, 255, 120)  # Medium health (>50%)
+    GREEN_LOW_HEALTH = (108, 180, 80)  # Low health (<50%)
+    GREEN_CRITICAL_HEALTH = (68, 140, 40)  # Critical health (<25%)
     GREEN_DESTROYED = (100, 130, 100)  # Destroyed (0%)
 
     # RED HEALTH
