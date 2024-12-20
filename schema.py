@@ -93,12 +93,16 @@ class Game:
     total_board_height: int = 10
     total_board_width: int = 24
     initial_fog_width: int = 4
+    # ships
     max_ship_length: int = 5
-    general_ship_infos: List[GeneralShipInfo]
+    general_ship_infos: List[GeneralShipInfo] = []
     total_ships_per_player: int = 10
-    avg_ship_length: float
-    ingame_players: List[Player]
-    current_player: str
+    avg_ship_length: float = 3.5
+    # players
+    ingame_players: List[Player] = []
+    current_player: str = None
+    player_count: int = 2
+    # messages
     log_messages: List[LogMessage]
 
     def add_log_message(
@@ -124,25 +128,27 @@ class Game:
             self.add_log_message("Spieler 1 und Spieler 2 erfolgreich hinzugefügt.")
             return players
 
-        while len(players) < 2:
+        while len(players) < self.player_count:
             player_name: str = ""
-            self.add_log_message(
-                "Bitte Namen für SpielerIn " + str(len(players) + 1) + " eingeben:"
-            )
+            print(f"\nBitte Namen für SpielerIn {len(players) + 1} eingeben:")
             player_name = input("Spielername: ").strip()
 
-            if player_name != "" and not any(player_name == p.name for p in players):
-                self.add_log_message(
-                    'Hinzufügen des Spielers " ' + player_name + '" war erfolgreich.'
-                )
+            if player_name != "" and not any(
+                player_name.lower() == p.name.lower() for p in players
+            ):
+                print(f'Hinzufügen des Spielers "{player_name}" war erfolgreich.')
                 players.append(Player(name=player_name))
             else:
-                self.add_log_message(
+                print(
                     "Der Name darf nicht bereits vergeben oder leer sein. "
                     + "Bitte erneut versuchen!"
                 )
 
         self.ingame_players = players
+        self.add_log_message(
+            f"Spieler hinzugefügt: {', '.join([p.name for p in players])}."
+        )
+
         return players
 
     def set_quick_start_settings(self):
@@ -172,8 +178,9 @@ class Game:
 
         self.avg_ship_length = avg_counter / self.total_ships_per_player
 
-        # set ingame players
-        self.set_ingame_players()
+        # set ingame players # redo to manual name (False)
+        self.player_count = 2
+        self.set_ingame_players(quick_starting=True)
         self.current_player = (
             self.ingame_players[0].name if self.ingame_players[0] is not None else ""
         )

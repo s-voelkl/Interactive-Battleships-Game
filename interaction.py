@@ -1,9 +1,8 @@
 from schema import *
-from ui import *
-import time
 from constants import *
-import random
-import math
+from ui import *
+from helper_functions import *
+import time
 
 
 def setup_ship_positions(game: Game):
@@ -53,7 +52,7 @@ def setup_ship_positions(game: Game):
     game.ingame_players[0].ships = [
         Ship(5, 0, 4, 0, 0),
         Ship(4, 0, 3, 2, 2),
-        Ship(4, 1, 4, 4, 4),  # H 1-4, V 4-4
+        Ship(4, 1, 4, 4, 4),
         Ship(3, 3, 1, 6, 6),
         Ship(3, 5, 5, 9, 7),
         Ship(3, 9, 7, 5, 5),
@@ -113,6 +112,196 @@ def update_current_player(game: Game):
     # automatically reduce the visibility rounds for all ships of the current player
     adjust_players_ship_visibilities(game.get_current_player_object(), -1)
     update_ui(game)
+
+
+def validate_own_ship_placement(
+    game: Game,
+    current_player: Player,
+    start_position_h,
+    end_position_h,
+    start_position_v,
+    end_position_v,
+) -> bool:
+    # compare all existing ships with the ship that shall be placed
+    # ship to place if valid if all tiles of other ships are >1 tile distanced from it.
+    # es = existing ship, cs = current ship (to be placed and validated)
+    for es in current_player.ships:
+        es_lower_pos_v = min(es.position_start_v, es.position_end_v)
+        es_higher_pos_v = max(es.position_start_v, es.position_end_v)
+        es_lower_pos_h = min(es.position_start_h, es.position_end_h)
+        es_higher_pos_h = max(es.position_start_h, es.position_end_h)
+
+        # exact positions of current players ship
+        cs_lower_pos_v = min(start_position_v, end_position_v)
+        cs_higher_pos_v = max(start_position_v, end_position_v)
+        cs_lower_pos_h = min(start_position_h, end_position_h)
+        cs_higher_pos_h = max(start_position_h, end_position_h)
+
+        # go through every possible combination of ship alignments (also suitable for ships with length > 5!)
+        # vertical position - op
+        for es_vertical_tile in range(es_lower_pos_v, es_higher_pos_v + 1):
+            # horizontal position - op
+            for es_horizontal_tile in range(es_lower_pos_h, es_higher_pos_h + 1):
+
+                # vertical position - cp
+                for cs_vertical_tile in range(cs_lower_pos_v, cs_higher_pos_v + 1):
+                    # horizontal position - op
+                    for cs_horizontal_tile in range(
+                        cs_lower_pos_h, cs_higher_pos_h + 1
+                    ):
+                        # get the absolute values (e.g. abs(-2) = 2)
+                        if (abs(es_vertical_tile - cs_vertical_tile) <= 1) and (
+                            abs(es_horizontal_tile - cs_horizontal_tile) <= 1
+                        ):
+                            return False
+
+    return True
+
+
+def take_turn(game: Game):
+    current_player: Player = game.get_current_player_object()
+    valid_input: bool = False
+    chosen_ship: Ship = None
+    ship_action: int = 0
+
+    styled_print(
+        f"{game.current_player} ist am Zug.", rgb_tuple=COLORS.LOG_MESSAGES.value
+    )
+
+    reset_ship_selection: bool = True
+
+    while reset_ship_selection:
+        styled_print(
+            f"Bitte Schiff für Aktion auswählen [sortiert nach Platzierung]",
+            rgb_tuple=COLORS.LOG_MESSAGES.value,
+        )
+
+        # Selecting a ship for the turn. Must have >0 hp
+        # the not anymore existing ships are not displayed but block their original enumerated number in the list.
+        #   this helps the user.
+        for i, ship in enumerate(current_player.ships):
+            if ship.current_hp > 0:
+                styled_print(
+                    f" [{i + 1}]\t{ship.ship_length}er Schiff\t mit {ship.current_hp} HP bei horizontal {string.ascii_uppercase[ship.position_start_h]}"
+                    + f" und vertikal {ship.position_start_v + 1},\tnoch sichtbar für {ship.remaining_visibility_rounds} Runden.",
+                    rgb_tuple=COLORS.LOG_MESSAGES.value,
+                )
+
+        # choose a ship for the turn, by player input
+        valid_input: bool = False
+        while not valid_input:
+            try:
+                user_input: str = input(
+                    f"Eingabe für Schiff [{1} - {game.total_ships_per_player}]: "
+                )
+                game.add_log_message(
+                    f"Eingabe für Schiff: {user_input}",
+                    [game.current_player],
+                )
+                update_ui(game)
+
+                if not user_input.isnumeric():
+                    game.add_log_message(
+                        "Der Wert muss eine Zahl sein!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                value: int = int(user_input) - 1
+
+                if not (0 <= value <= game.total_ships_per_player - 1):
+                    game.add_log_message(
+                        f"Der Wert muss zwischen {1} und {game.total_ships_per_player} liegen!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                if current_player.ships[value].current_hp <= 0:
+                    game.add_log_message(
+                        f"Das gewählte Schiff hat keine HP mehr und kann keine Aktion mehr ausführen!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                chosen_ship: Ship = current_player.ships[value]
+                valid_input = True
+
+            except Exception:
+                valid_input = False
+
+        game.add_log_message(
+            f"[{current_player.ships.index(chosen_ship) + 1}] ({ship.ship_length}er Schiff) ausgewählt. ",
+            [game.current_player],
+        )
+        update_ui(game)
+
+        styled_print(
+            "Welche Aktion soll ausgeführt werden", rgb_tuple=COLORS.LOG_MESSAGES.value
+        )
+        styled_print("[1]\tSchießen", rgb_tuple=COLORS.LOG_MESSAGES.value)
+        styled_print("[2]\tBewegen", rgb_tuple=COLORS.LOG_MESSAGES.value)
+        styled_print(
+            "[3]\tAnderes Schiff auswählen", rgb_tuple=COLORS.LOG_MESSAGES.value
+        )
+
+        # choose an action for the chosen ship
+        valid_input = False
+        while not valid_input:
+            try:
+                user_input: str = input(
+                    f"Eingabe für Aktion [1 = Schießen, 2 = Bewegen, 3 = Anderes Schiff]: "
+                )
+                game.add_log_message(
+                    f"Eingabe für Aktion: {user_input}",
+                    [game.current_player],
+                )
+                update_ui(game)
+
+                if not user_input.isnumeric():
+                    game.add_log_message(
+                        "Der Wert muss eine Zahl sein!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                ship_action = int(user_input)
+
+                if not (1 <= ship_action <= 3):
+                    game.add_log_message(
+                        f"Der Wert muss zwischen 1 und 3 liegen!",
+                        [game.current_player],
+                    )
+                    update_ui(game)
+                    valid_input = False
+                    continue
+
+                valid_input = True
+
+            except Exception:
+                valid_input = False
+
+        if ship_action == 1:
+            __attack_with_ship(game, chosen_ship)
+        elif ship_action == 2:
+            __move_ship(game, chosen_ship)
+        elif ship_action == 3:
+            reset_ship_selection = True
+            styled_print(
+                "Schiffauswahl zurückgesetzt.", rgb_tuple=COLORS.LOG_MESSAGES.value
+            )
+            continue
+        else:
+            raise Exception("Interner Fehler: Ungültige Aktion für Schiff ausgewählt.")
+
+        break
 
 
 def __place_multiple_ships_on_map(
@@ -327,7 +516,7 @@ def __place_multiple_ships_on_map(
                         continue
 
                     # check if ship position is valid
-                    ship_is_valid: bool = validate_ship_placement(
+                    ship_is_valid: bool = validate_own_ship_placement(
                         game,
                         current_player,
                         ship_start_position_h,
@@ -372,194 +561,12 @@ def __place_multiple_ships_on_map(
             continue
 
 
-def validate_ship_placement(
-    game: Game,
-    current_player: Player,
-    start_position_h,
-    end_position_h,
-    start_position_v,
-    end_position_v,
-) -> bool:
-    # compare all existing ships with the ship that shall be placed
-    # ship to place if valid if all tiles of other ships are >1 tile distanced from it.
-    # es = existing ship, cs = current ship (to be placed and validated)
-    for es in current_player.ships:
-        es_lower_pos_v = min(es.position_start_v, es.position_end_v)
-        es_higher_pos_v = max(es.position_start_v, es.position_end_v)
-        es_lower_pos_h = min(es.position_start_h, es.position_end_h)
-        es_higher_pos_h = max(es.position_start_h, es.position_end_h)
-
-        # exact positions of current players ship
-        cs_lower_pos_v = min(start_position_v, end_position_v)
-        cs_higher_pos_v = max(start_position_v, end_position_v)
-        cs_lower_pos_h = min(start_position_h, end_position_h)
-        cs_higher_pos_h = max(start_position_h, end_position_h)
-
-        # go through every possible combination of ship alignments (also suitable for ships with length > 5!)
-        # vertical position - op
-        for es_vertical_tile in range(es_lower_pos_v, es_higher_pos_v + 1):
-            # horizontal position - op
-            for es_horizontal_tile in range(es_lower_pos_h, es_higher_pos_h + 1):
-
-                # vertical position - cp
-                for cs_vertical_tile in range(cs_lower_pos_v, cs_higher_pos_v + 1):
-                    # horizontal position - op
-                    for cs_horizontal_tile in range(
-                        cs_lower_pos_h, cs_higher_pos_h + 1
-                    ):
-                        # get the absolute values (e.g. abs(-2) = 2)
-                        if (abs(es_vertical_tile - cs_vertical_tile) <= 1) and (
-                            abs(es_horizontal_tile - cs_horizontal_tile) <= 1
-                        ):
-                            return False
-
-    return True
-
-
-def take_turn(game: Game):
-    current_player: Player = game.get_current_player_object()
-    valid_input: bool = False
-    chosen_ship: Ship = None
-    ship_action: int = 0
-    
-
-    styled_print(f"{game.current_player} ist am Zug.", rgb_tuple=COLORS.LOG_MESSAGES.value)
-    
-    reset_ship_selection: bool = True
-    
-    while reset_ship_selection:
-        styled_print(
-            f"Bitte Schiff für Aktion auswählen [sortiert nach Platzierung]", 
-            rgb_tuple=COLORS.LOG_MESSAGES.value
-        )
-
-        # Selecting a ship for the turn. Must have >0 hp
-        # the not anymore existing ships are not displayed but block their original enumerated number in the list.
-        #   this helps the user.
-        for i, ship in enumerate(current_player.ships):
-            if ship.current_hp > 0:
-                styled_print(
-                    f" [{i + 1}]\t{ship.ship_length}er Schiff\t mit {ship.current_hp} HP bei horizontal {string.ascii_uppercase[ship.position_start_h]}"
-                    + f" und vertikal {ship.position_start_v + 1},\tnoch sichtbar für {ship.remaining_visibility_rounds} Runden.", 
-                    rgb_tuple=COLORS.LOG_MESSAGES.value
-                )
-
-        # choose a ship for the turn, by player input
-        valid_input: bool = False
-        while not valid_input:
-            try:
-                user_input: str = input(
-                    f"Eingabe für Schiff [{1} - {game.total_ships_per_player}]: "
-                )
-                game.add_log_message(
-                    f"Eingabe für Schiff: {user_input}",
-                    [game.current_player],
-                )
-                update_ui(game)
-
-                if not user_input.isnumeric():
-                    game.add_log_message(
-                        "Der Wert muss eine Zahl sein!",
-                        [game.current_player],
-                    )
-                    update_ui(game)
-                    valid_input = False
-                    continue
-
-                value: int = int(user_input) - 1
-
-                if not (0 <= value <= game.total_ships_per_player - 1):
-                    game.add_log_message(
-                        f"Der Wert muss zwischen {1} und {game.total_ships_per_player} liegen!",
-                        [game.current_player],
-                    )
-                    update_ui(game)
-                    valid_input = False
-                    continue
-
-                if current_player.ships[value].current_hp <= 0:
-                    game.add_log_message(
-                        f"Das gewählte Schiff hat keine HP mehr und kann keine Aktion mehr ausführen!",
-                        [game.current_player],
-                    )
-                    update_ui(game)
-                    valid_input = False
-                    continue
-
-                chosen_ship: Ship = current_player.ships[value]
-                valid_input = True
-
-            except Exception:
-                valid_input = False
-
-        game.add_log_message(
-            f"[{current_player.ships.index(chosen_ship) + 1}] ({ship.ship_length}er Schiff) ausgewählt. ",
-            [game.current_player],
-        )
-        update_ui(game)
-        
-        styled_print("Welche Aktion soll ausgeführt werden", rgb_tuple=COLORS.LOG_MESSAGES.value)
-        styled_print("[1]\tSchießen", rgb_tuple=COLORS.LOG_MESSAGES.value)
-        styled_print("[2]\tBewegen", rgb_tuple=COLORS.LOG_MESSAGES.value)
-        styled_print("[3]\tAnderes Schiff auswählen", rgb_tuple=COLORS.LOG_MESSAGES.value)
-        
-        # choose an action for the chosen ship
-        valid_input = False
-        while not valid_input:
-            try:
-                user_input: str = input(
-                    f"Eingabe für Aktion [1 = Schießen, 2 = Bewegen, 3 = Anderes Schiff]: "
-                )
-                game.add_log_message(
-                    f"Eingabe für Aktion: {user_input}",
-                    [game.current_player],
-                )
-                update_ui(game)
-
-                if not user_input.isnumeric():
-                    game.add_log_message(
-                        "Der Wert muss eine Zahl sein!",
-                        [game.current_player],
-                    )
-                    update_ui(game)
-                    valid_input = False
-                    continue
-
-                ship_action = int(user_input)
-
-                if not (1 <= ship_action <= 3):
-                    game.add_log_message(
-                        f"Der Wert muss zwischen 1 und 3 liegen!",
-                        [game.current_player],
-                    )
-                    update_ui(game)
-                    valid_input = False
-                    continue
-
-                valid_input = True
-
-            except Exception:
-                valid_input = False
-        
-        if ship_action == 1:
-            attack_with_ship(game, chosen_ship)
-        elif ship_action == 2:
-            move_ship(game, chosen_ship)
-        elif ship_action == 3:
-            reset_ship_selection = True
-            styled_print("Schiffauswahl zurückgesetzt.", rgb_tuple=COLORS.LOG_MESSAGES.value)
-            continue
-        else: 
-            raise Exception("Interner Fehler: Ungültige Aktion für Schiff ausgewählt.")
-        
-        break    
-
-def move_ship(game: Game, ship: Ship):
+def __move_ship(game: Game, ship: Ship):
     game.add_log_message("MOVING SHIP")
-    pass #redo
+    pass  # redo
 
 
-def attack_with_ship(game: Game, attacking_ship: Ship):
+def __attack_with_ship(game: Game, attacking_ship: Ship):
     # Player has attacks based on the current health of the ship.
     attack_count: int = attacking_ship.current_hp
     for i in range(attack_count):
@@ -570,8 +577,7 @@ def attack_with_ship(game: Game, attacking_ship: Ship):
             )
             update_ui(game)
             break
-        
-        
+
         # Attacking
         valid_input: bool = False
         pos_h: int = 0
@@ -681,7 +687,7 @@ def attack_with_ship(game: Game, attacking_ship: Ship):
 
             if ship_was_hit and new_ship_hp > 0:
                 attacked_ship.current_hp = new_ship_hp
-                
+
                 hit_str = "kritisch" if damage_done > 1 else "einfach"
                 game.add_log_message(
                     f"Das Schiff bei horizontal {string.ascii_uppercase[attacked_ship.position_start_h]}"
@@ -691,7 +697,7 @@ def attack_with_ship(game: Game, attacking_ship: Ship):
             elif ship_was_hit and new_ship_hp <= 0:
                 attacked_ship.current_hp = new_ship_hp
                 attacked_ship.remaining_visibility_rounds += 1000000
-                
+
                 game.add_log_message(
                     f"Das Schiff bei horizontal {string.ascii_uppercase[attacked_ship.position_start_h]}"
                     + f" und vertikal {attacked_ship.position_start_v + 1} wurde versenkt!",
@@ -707,121 +713,3 @@ def attack_with_ship(game: Game, attacking_ship: Ship):
 
     # adjust visibility for the attacking ship.
     attacking_ship.remaining_visibility_rounds += 1
-
-
-def adjust_players_ship_visibilities(player: Player, adjustment: int):
-    # Reduce/Add visibility rounds for all ships of a player
-    for ship in player.ships:
-        ship.remaining_visibility_rounds += adjustment
-        if ship.remaining_visibility_rounds < 0:
-            ship.remaining_visibility_rounds = 0
-
-
-def get_ship_by_position(game: Game, position_h: int, position_v: int) -> Ship | None:
-    # Function shall return a ship object based on the given position or None
-
-    for player in game.ingame_players:
-        for ship in player.ships:
-            ship_lower_h = min(ship.position_start_h, ship.position_end_h)
-            ship_higher_h = max(ship.position_start_h, ship.position_end_h)
-            ship_lower_v = min(ship.position_start_v, ship.position_end_v)
-            ship_higher_v = max(ship.position_start_v, ship.position_end_v)
-
-            if (
-                ship_lower_h <= position_h <= ship_higher_h
-                and ship_lower_v <= position_v <= ship_higher_v
-                and ship.current_hp > 0
-            ):
-                return ship
-    return None
-
-
-def determine_ship_hit(game: Game, attacking_ship: Ship, attacked_ship: Ship) -> bool:
-    # Function shall determine if a ship was hit by another ship based on a calculation.
-
-    # get the ship length based probability, so based on the length of the attacked ship.
-    #   longer ships can be hit better than shorter ships. used sqrt for a better distribution.
-    ship_length_based_probability = math.sqrt(
-        (attacked_ship.ship_length / game.avg_ship_length)
-    )
-    ship_length_based_probability = (
-        1 if ship_length_based_probability > 1 else ship_length_based_probability
-    )
-
-    # get the minimum relative distance between two ships
-    map_diagonal_distance = math.sqrt(
-        game.total_board_height**2 + game.total_board_width**2
-    )
-    distance_based_probability = 1 - 0.5 * (
-        get_min_diagonal_distance_between_ships(attacking_ship, attacked_ship)
-        / map_diagonal_distance
-    )
-    distance_based_probability = (
-        1 if distance_based_probability > 1 else distance_based_probability
-    )
-
-    # probability for a health based probability. exponent of 0.7 for less impact of this value on the probability.
-    hp_based_probability = math.sqrt(
-        (attacking_ship.current_hp / attacking_ship.ship_length)
-    )
-    hp_based_probability = 1 if hp_based_probability > 1 else hp_based_probability
-
-    probability_hit = (
-        ship_length_based_probability
-        * distance_based_probability
-        * hp_based_probability
-    )
-
-    random_number = random.random()
-
-    # debug information
-    # print(f"ship_length_based_probability: {ship_length_based_probability}")
-    # print(f"distance_based_probability: {distance_based_probability}")
-    # print(f"hp_based_probability: {hp_based_probability}")
-    # print(f"probability_hit: {probability_hit}")
-    # print(f"random_number: {random_number}")
-
-    if random_number <= probability_hit:
-        return True
-    return False
-
-
-def determine_hit_damage() -> int:
-    critical_hit_probability = 0.05
-    random_number = random.random()
-
-    if random_number <= critical_hit_probability:
-        return 2
-    return 1
-
-
-def get_min_diagonal_distance_between_ships(ship1: Ship, ship2: Ship) -> float:
-
-    # get the min and max values of the ships horizontal and vertical positions
-    ship1_lower_h = min(ship1.position_start_h, ship1.position_end_h)
-    ship1_higher_h = max(ship1.position_start_h, ship1.position_end_h)
-    ship1_lower_v = min(ship1.position_start_v, ship1.position_end_v)
-    ship1_higher_v = max(ship1.position_start_v, ship1.position_end_v)
-
-    ship2_lower_h = min(ship2.position_start_h, ship2.position_end_h)
-    ship2_higher_h = max(ship2.position_start_h, ship2.position_end_h)
-    ship2_lower_v = min(ship2.position_start_v, ship2.position_end_v)
-    ship2_higher_v = max(ship2.position_start_v, ship2.position_end_v)
-
-    # get the calculated items into a list of distances
-    distances: List[float] = []
-
-    # get all distances and choose the smallest one
-    for ship1_h in range(ship1_lower_h, ship1_higher_h + 1):
-        for ship1_v in range(ship1_lower_v, ship1_higher_v + 1):
-            for ship2_h in range(ship2_lower_h, ship2_higher_h + 1):
-                for ship2_v in range(ship2_lower_v, ship2_higher_v + 1):
-                    # calculate the distance using the vector length formula |vector|=sqrt(v1^2+v2^2).
-                    distances.append(
-                        math.sqrt(
-                            abs((ship1_h - ship2_h)) ** 2
-                            + abs((ship1_v - ship2_v)) ** 2
-                        )
-                    )
-
-    return min(distances) if distances else 0

@@ -8,26 +8,28 @@ import sys
 
 def startup():
     clear_console_window()
-    ("Battleships Game is starting...")
+    print("Battleships Game is starting...")
 
     # color and style activation
     os.system("")
     test_colors_and_styling()
-    time.sleep(0)
+    time.sleep(0.25)  # redo
     clear_console_window()
 
     # start game
     game: Game = Game()
+    print_game_header(game)
     game.set_quick_start_settings()
     update_ui(game)
     game_loop: bool = True
 
+    # game loop
     while True:
         # setup ships
         setup_ship_positions(game)
         update_ui(game)
 
-        # check if a player has won and do player turns
+        # round loop: check if a player has won and do player turns
         players_won: List[Player] = []
         players_lost: List[Player] = []
         while True:

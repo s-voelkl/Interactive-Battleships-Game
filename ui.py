@@ -32,9 +32,7 @@ def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
         )
 
 
-def update_ui(game: Game):
-    clear_console_window()
-
+def print_game_header(game: Game):
     styled_print(
         f"INTERACTIVE BATTLESHIPS GAME\n",
         rgb_tuple=COLORS.GAME_INFO.value,
@@ -54,7 +52,14 @@ def update_ui(game: Game):
             rgb_tuple=COLORS.GAME_INFO.value,
         )
 
-    print("\n")
+    if game.ingame_players:
+        print("\n")
+
+
+def update_ui(game: Game):
+    clear_console_window()
+
+    print_game_header(game)
     print_battleships_map(game)
     print_log_messages(game, game.current_player)
 
