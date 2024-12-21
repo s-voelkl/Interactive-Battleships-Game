@@ -31,3 +31,7 @@ venv.bak/
 # IPython
 profile_default/
 ipython_config.py
+
+# Documentation for Lecture
+*.docx
+*.pdf

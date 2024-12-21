@@ -51,16 +51,16 @@ def setup_ship_positions(game: Game):
     # update_current_player(game)
 
     game.ingame_players[0].ships = [
-        Ship(5, 0, 4, 0, 0),
+        Ship(5, 0, 4, 0, 0, 3, 1),
         Ship(4, 0, 3, 2, 2, 3),
-        Ship(4, 1, 4, 4, 4),
+        Ship(4, 2, 5, 4, 4),
         Ship(3, 3, 1, 6, 6, 0),  # destroyed
         Ship(3, 5, 5, 9, 7, 2),
         Ship(3, 9, 7, 5, 5),
         Ship(2, 9, 9, 9, 8, 1),
         Ship(2, 2, 1, 9, 9, 0),  # destroyed
         Ship(2, 8, 7, 0, 0),
-        Ship(2, 13, 14, 0, 0),
+        Ship(2, 13, 14, 0, 0, 1, 1),
     ]
     update_ui(game)
     time.sleep(0.25)
@@ -70,14 +70,14 @@ def setup_ship_positions(game: Game):
     game.ingame_players[1].ships = [
         Ship(5, 14, 18, 0, 0, 0),  # destroyed
         Ship(4, 14, 17, 2, 2),
-        Ship(4, 15, 18, 4, 4, 2),
+        Ship(4, 15, 18, 4, 4, 2, 1),
         Ship(3, 16, 18, 6, 6, 2),
         Ship(3, 19, 21, 9, 9, 0),  # destroyed
-        Ship(3, 22, 20, 5, 5, 1),
+        Ship(3, 21, 21, 5, 7, 1, 1),
         Ship(2, 23, 23, 9, 8),
-        Ship(2, 16, 15, 9, 9),
+        Ship(2, 15, 14, 9, 9),
         Ship(2, 21, 20, 0, 0, 1),
-        Ship(2, 3, 2, 9, 9),
+        Ship(2, 5, 6, 2, 2, 1),
     ]
 
     update_ui(game)
@@ -164,11 +164,6 @@ def take_turn(game: Game):
     valid_input: bool = False
     chosen_ship: Ship = None
     ship_action: int = 0
-
-    styled_print(
-        f"{game.current_player} ist am Zug.", rgb_tuple=COLORS.LOG_MESSAGES.value
-    )
-
     reset_ship_selection: bool = True
 
     while reset_ship_selection:
@@ -238,7 +233,7 @@ def take_turn(game: Game):
                 valid_input = False
 
         game.add_log_message(
-            f"[{current_player.ships.index(chosen_ship) + 1}] ({ship.ship_length}er Schiff) ausgewählt. ",
+            f"{ship.ship_length}er Schiff [{current_player.ships.index(chosen_ship) + 1}] ausgewählt. ",
             [game.current_player],
         )
         update_ui(game)
@@ -248,9 +243,9 @@ def take_turn(game: Game):
         )
         styled_print("[1]\tSchießen", rgb_tuple=COLORS.LOG_MESSAGES.value)
         styled_print("[2]\tBewegen", rgb_tuple=COLORS.LOG_MESSAGES.value)
-        styled_print("[3]\tRotieren", rgb_tuple=COLORS.LOG_MESSAGES.value)
+        # styled_print("[3]\tRotieren", rgb_tuple=COLORS.LOG_MESSAGES.value)
         styled_print(
-            "[4]\tAnderes Schiff auswählen", rgb_tuple=COLORS.LOG_MESSAGES.value
+            "[3]\tAnderes Schiff auswählen", rgb_tuple=COLORS.LOG_MESSAGES.value
         )
 
         # choose an action for the chosen ship
@@ -295,9 +290,9 @@ def take_turn(game: Game):
             __attack_with_ship(game, chosen_ship)
         elif ship_action == 2:
             __move_ship(game, chosen_ship)
+        # elif ship_action == 3:
+        #     __rotate_ship(game, chosen_ship)
         elif ship_action == 3:
-            __rotate_ship(game, chosen_ship)
-        elif ship_action == 4:
             reset_ship_selection = True
             styled_print(
                 "Schiffauswahl zurückgesetzt.", rgb_tuple=COLORS.LOG_MESSAGES.value
@@ -567,6 +562,7 @@ def __place_multiple_ships_on_map(
 
 
 def __rotate_ship(game: Game, ship: Ship):
+    # not implemented yet.
     pass
 
 
@@ -589,7 +585,8 @@ def __move_ship(game: Game, ship: Ship):
     if len(allowed_directions) == 1:
         movement_direction = allowed_directions[0]
         game.add_log_message(
-            f"Einzig mögliche Bewegungsrichtung: {direction_names[movement_direction]} [{movement_direction}]"
+            f"Einzig mögliche Bewegungsrichtung: {direction_names[movement_direction]} [{movement_direction}]",
+            [game.current_player],
         )
         update_ui(game)
         valid_input = True
@@ -641,7 +638,8 @@ def __move_ship(game: Game, ship: Ship):
     if directions[movement_direction] == 1:
         movement_distance = 1
         game.add_log_message(
-            f"Einzig mögliche Bewegungsreichweite: {movement_distance}"
+            f"Einzig mögliche Bewegungsreichweite: {movement_distance}",
+            [game.current_player],
         )
         update_ui(game)
         valid_input = True
@@ -725,7 +723,10 @@ def __move_ship(game: Game, ship: Ship):
 
         # UI Update
         update_ui(game)
-        styled_print(f"{ship.ship_length}er Schiff um {movement_done} bewegt...")
+        styled_print(
+            f"{ship.ship_length}er Schiff um {movement_done} bewegt...",
+            rgb_tuple=COLORS.LOG_MESSAGES.value,
+        )
         time.sleep(1)
 
 

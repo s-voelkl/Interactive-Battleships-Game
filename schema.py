@@ -35,6 +35,7 @@ class Ship:
         position_start_v: int,
         position_end_v: int,
         current_hp: int = None,
+        remaining_visibility_rounds: int = 0,
     ):
         self.ship_length = ship_length
         self.position_start_h = position_start_h
@@ -42,7 +43,7 @@ class Ship:
         self.position_start_v = position_start_v
         self.position_end_v = position_end_v
         self.current_hp = ship_length if current_hp is None else current_hp
-        self.remaining_visibility_rounds = 0
+        self.remaining_visibility_rounds = remaining_visibility_rounds
 
 
 class Player:

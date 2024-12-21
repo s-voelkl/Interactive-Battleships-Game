@@ -23,11 +23,9 @@ def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
         )
 
         styled_print(
-            datetime_formatted
-            + " "
-            + log_message.text
-            + " "
-            + str(log_message.related_players),
+            datetime_formatted + " " + log_message.text,
+            # + " "
+            # + str(log_message.related_players),
             rgb_tuple=COLORS.LOG_MESSAGES.value,
         )
 
