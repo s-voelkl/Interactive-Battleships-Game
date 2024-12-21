@@ -255,10 +255,10 @@ def determine_if_ship_crash(ship1: Ship, ship2: Ship) -> bool:
     return False
 
 
-def act_ship_crashing_damages(acting_ship: Ship, crashed_ship: Ship) -> Tuple[int, int]:
+def act_ship_crashing_damages(acting_ship: Ship, crashed_ship: Ship):
     # check again if ship crash happens
     if not determine_if_ship_crash(acting_ship, crashed_ship):
-        return (0, 0)
+        return None
 
     dmg_against_acting_ship: int = 0
     dmg_against_crashed_ship: int = 0
@@ -307,3 +307,25 @@ def get_ship_orientation(ship: Ship) -> int:
             return 2  # east
         else:
             return 4  # west
+
+
+def act_single_ship_movement(
+    game: Game, acting_ship: Ship, direction: int, distance: int = 1
+):
+    # adjust ship positions
+    if direction == 1:
+        acting_ship.position_start_v -= 1
+        acting_ship.position_end_v -= 1
+    elif direction == 2:
+        acting_ship.position_start_h += 1
+        acting_ship.position_end_h += 1
+    elif direction == 3:
+        acting_ship.position_start_v += 1
+        acting_ship.position_end_v += 1
+    elif direction == 4:
+        acting_ship.position_start_h -= 1
+        acting_ship.position_end_h -= 1
+    else:
+        raise Exception(
+            f"Interner Fehler. Keine Richtung mit dem Wert {direction} existiert!"
+        )
