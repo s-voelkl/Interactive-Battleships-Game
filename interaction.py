@@ -3,6 +3,7 @@ from constants import *
 from ui import *
 from helper_functions import *
 import time
+from typing import Dict
 
 
 def setup_ship_positions(game: Game):
@@ -51,15 +52,15 @@ def setup_ship_positions(game: Game):
 
     game.ingame_players[0].ships = [
         Ship(5, 0, 4, 0, 0),
-        Ship(4, 0, 3, 2, 2),
+        Ship(4, 0, 3, 2, 2, 3),
         Ship(4, 1, 4, 4, 4),
-        Ship(3, 3, 1, 6, 6),
-        Ship(3, 5, 5, 9, 7),
+        Ship(3, 3, 1, 6, 6, 0),  # destroyed
+        Ship(3, 5, 5, 9, 7, 2),
         Ship(3, 9, 7, 5, 5),
-        Ship(2, 9, 9, 9, 8),
-        Ship(2, 2, 1, 9, 9),
+        Ship(2, 9, 9, 9, 8, 1),
+        Ship(2, 2, 1, 9, 9, 0),  # destroyed
         Ship(2, 8, 7, 0, 0),
-        Ship(2, 9, 8, 3, 3),
+        Ship(2, 13, 14, 0, 0),
     ]
     update_ui(game)
     time.sleep(0.25)
@@ -67,16 +68,16 @@ def setup_ship_positions(game: Game):
     update_ui(game)
 
     game.ingame_players[1].ships = [
-        Ship(5, 14, 18, 0, 0),
+        Ship(5, 14, 18, 0, 0, 0),  # destroyed
         Ship(4, 14, 17, 2, 2),
-        Ship(4, 15, 18, 4, 4),
-        Ship(3, 16, 18, 6, 6),
-        Ship(3, 19, 21, 9, 9),
-        Ship(3, 22, 20, 5, 5),
+        Ship(4, 15, 18, 4, 4, 2),
+        Ship(3, 16, 18, 6, 6, 2),
+        Ship(3, 19, 21, 9, 9, 0),  # destroyed
+        Ship(3, 22, 20, 5, 5, 1),
         Ship(2, 23, 23, 9, 8),
         Ship(2, 16, 15, 9, 9),
-        Ship(2, 21, 20, 0, 0),
-        Ship(2, 23, 22, 3, 3),
+        Ship(2, 21, 20, 0, 0, 1),
+        Ship(2, 3, 2, 9, 9),
     ]
 
     update_ui(game)
@@ -246,8 +247,9 @@ def take_turn(game: Game):
         )
         styled_print("[1]\tSchießen", rgb_tuple=COLORS.LOG_MESSAGES.value)
         styled_print("[2]\tBewegen", rgb_tuple=COLORS.LOG_MESSAGES.value)
+        styled_print("[3]\tRotieren", rgb_tuple=COLORS.LOG_MESSAGES.value)
         styled_print(
-            "[3]\tAnderes Schiff auswählen", rgb_tuple=COLORS.LOG_MESSAGES.value
+            "[4]\tAnderes Schiff auswählen", rgb_tuple=COLORS.LOG_MESSAGES.value
         )
 
         # choose an action for the chosen ship
@@ -293,6 +295,8 @@ def take_turn(game: Game):
         elif ship_action == 2:
             __move_ship(game, chosen_ship)
         elif ship_action == 3:
+            __rotate_ship(game, chosen_ship)
+        elif ship_action == 4:
             reset_ship_selection = True
             styled_print(
                 "Schiffauswahl zurückgesetzt.", rgb_tuple=COLORS.LOG_MESSAGES.value
@@ -561,9 +565,134 @@ def __place_multiple_ships_on_map(
             continue
 
 
+def __rotate_ship(game: Game, ship: Ship):
+    pass
+
+
 def __move_ship(game: Game, ship: Ship):
-    game.add_log_message("MOVING SHIP")
-    pass  # redo
+    valid_input: bool = False
+    movement_direction: int = 0
+    movement_distance: int = 0
+    max_movement: int = determine_max_ship_movement(ship.ship_length)
+
+    # ask player for the direction and distance of the movement
+    # directions: north = 1, east = 2, south = 3, west = 4
+    # dict with the values: {[key: direction], [value: max_distance]}
+    directions: Dict[int, int] = determine_max_directional_ship_movement(
+        game, ship, max_movement
+    )
+    allowed_directions: list = [key for key, val in directions.items() if val > 0]
+    direction_names: Dict[int, str] = {1: "Norden", 2: "Osten", 3: "Süden", 4: "Westen"}
+
+    # skip over user input if only one direction possible
+    if len(allowed_directions) == 1:
+        movement_direction = allowed_directions[0]
+        game.add_log_message(
+            f"Einzig mögliche Bewegungsrichtung: {direction_names[movement_direction]} [{movement_direction}]"
+        )
+        update_ui(game)
+        valid_input = True
+
+    # user input for the movement direction
+    while not valid_input:
+        for key in allowed_directions:
+            styled_print(
+                f"[{key}] {direction_names[key]}",
+                rgb_tuple=COLORS.LOG_MESSAGES.value,
+            )
+        try:
+            user_input: str = input(
+                f"Bewegungsrichtung [{', '.join(allowed_directions)}]: "
+            )
+            game.add_log_message(
+                f"Eingabe Bewegungsrichtung: {user_input}",
+                [game.current_player],
+            )
+            update_ui(game)
+
+            if not user_input.isnumeric():
+                game.add_log_message(
+                    "Der vertikale Wert muss eine Zahl sein!",
+                    [game.current_player],
+                )
+                update_ui(game)
+                valid_input = False
+                continue
+
+            movement_direction: int = int(user_input)
+
+            if not (movement_direction in allowed_directions):
+                game.add_log_message(
+                    f"Die Bewegungsrichtung muss einen dieser Werte haben: {', '.join(allowed_directions)}",
+                    [game.current_player],
+                )
+                update_ui(game)
+                valid_input = False
+                continue
+
+            valid_input = True
+
+        except Exception:
+            valid_input = False
+
+    # user input for the movement distance
+    valid_input = False
+    if directions[movement_direction] == 1:
+        movement_distance = 1
+        game.add_log_message(
+            f"Einzig mögliche Bewegungsreichweite: {movement_distance}"
+        )
+        update_ui(game)
+        valid_input = True
+
+    while not valid_input:
+        try:
+            user_input: str = input(
+                f"Anzahl der bewegten Felder [1 - {directions[movement_direction]}]: "
+            )
+            game.add_log_message(
+                f"Eingabe bewegte Felder: {user_input}",
+                [game.current_player],
+            )
+            update_ui(game)
+
+            if not user_input.isnumeric():
+                game.add_log_message(
+                    "Der vertikale Wert muss eine Zahl sein!",
+                    [game.current_player],
+                )
+                update_ui(game)
+                valid_input = False
+                continue
+
+            movement_distance: int = int(user_input)
+
+            if not (1 <= movement_distance in directions[movement_direction]):
+                game.add_log_message(
+                    f"Die Anzahl der bewegten Felder muss zwischen 1 und {directions[movement_direction]} liegen!",
+                    [game.current_player],
+                )
+                update_ui(game)
+                valid_input = False
+                continue
+
+            valid_input = True
+        except Exception:
+            valid_input = False
+
+    # move for each tile:
+    movement_done: int = 0
+    while movement_done < movement_distance:
+        # Movement
+        # TODO: WRITE FUNCTION FOR IF THE MOVEMENT IS VALID. REDO
+
+        # UI Update
+        update_ui(game)
+        time.sleep(1.5)
+
+        # check for crashing ships -> ui update and short wait time
+
+    # -----------
 
 
 def __attack_with_ship(game: Game, attacking_ship: Ship):
@@ -666,6 +795,7 @@ def __attack_with_ship(game: Game, attacking_ship: Ship):
             except Exception:
                 valid_input = False
 
+        # check if a ship was hit, get damage, update based on consequences
         attacked_ship: Ship | None = get_ship_by_position(game, pos_h, pos_v)
         current_player = game.get_current_player_object()
 
@@ -681,14 +811,15 @@ def __attack_with_ship(game: Game, attacking_ship: Ship):
             if attacked_ship.remaining_visibility_rounds <= 1:
                 attacked_ship.remaining_visibility_rounds = 1
 
-            # could be used later for critical hits
+            # damage calculation
             damage_done: int = determine_hit_damage()
             new_ship_hp: int = attacked_ship.current_hp - damage_done
+            hit_str = "kritisch" if damage_done > 1 else "einfach"
 
+            # consequences
             if ship_was_hit and new_ship_hp > 0:
                 attacked_ship.current_hp = new_ship_hp
 
-                hit_str = "kritisch" if damage_done > 1 else "einfach"
                 game.add_log_message(
                     f"Das Schiff bei horizontal {string.ascii_uppercase[attacked_ship.position_start_h]}"
                     + f" und vertikal {attacked_ship.position_start_v + 1} wurde {hit_str} getroffen!",
@@ -700,7 +831,7 @@ def __attack_with_ship(game: Game, attacking_ship: Ship):
 
                 game.add_log_message(
                     f"Das Schiff bei horizontal {string.ascii_uppercase[attacked_ship.position_start_h]}"
-                    + f" und vertikal {attacked_ship.position_start_v + 1} wurde versenkt!",
+                    + f" und vertikal {attacked_ship.position_start_v + 1} wurde {hit_str} versenkt!",
                     [],
                 )
             else:

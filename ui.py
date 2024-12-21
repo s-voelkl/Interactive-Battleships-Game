@@ -199,14 +199,17 @@ def print_battleships_map(game: Game):
             raise Exception(
                 "Internal Error: The size of the battlemaps do not align vertically!"
             )
-    # check if battlemaps have ships at the same positions
+    # check if battlemaps have ships (>0 HP) at the same positions
     for i in range(len(ship_positions_current_player)):
         for k in range(len(ship_positions_current_player[i])):
-            if (ship_positions_current_player[i][k] != 0) and (
-                ship_positions_other_player[i][k] != 0
+            if (
+                (ship_positions_current_player[i][k] != 0)
+                and (ship_hps_current_player[i][k] > 0)
+                and (ship_hps_other_player[i][k] > 0)
+                and (ship_positions_other_player[i][k] != 0)
             ):
                 raise Exception(
-                    "Internal Error: There are 2 ships at the same position!"
+                    "Internal Error: There are 2 ships with more than 0 HP at the same position!"
                 )
 
     # get BASIC VALUES
@@ -238,14 +241,50 @@ def print_battleships_map(game: Game):
             tile_symbol: str = "."
             tile_rgb_color: tuple
 
-            # case: current player's ship
-            if ship_positions_current_player[row][col] != 0:
+            # tiles are set over each other, as there can be multiple sources of information.
+            # e.g. a missed shot, a destroyed ship and a ship of the other player.
+
+            # 1. set default: no information
+            tile_symbol = "."
+            tile_rgb_color = COLORS.WATER_BASE.value
+
+            # 2. set water: missed shots
+            if missed_shots_current_player[row][col] != 0:
+                __missed_shots: int = missed_shots_current_player[row][col]
+                tile_symbol = "o"
+
+                if __missed_shots == 1:
+                    tile_rgb_color = COLORS.WATER_MISSED_ONCE.value
+                elif __missed_shots == 2:
+                    tile_rgb_color = COLORS.WATER_MISSED_TWICE.value
+                else:
+                    tile_rgb_color = COLORS.WATER_MISSED_OFTEN.value
+
+            # 3.1 set current players destroyed ships
+            if (
+                ship_positions_current_player[row][col] != 0
+                and ship_hps_current_player[row][col] <= 0
+            ):
+                tile_rgb_color = COLORS.GREEN_DESTROYED.value
+                tile_symbol = str(ship_positions_current_player[row][col])
+
+            # 3.2 set other players destroyed ships
+            if (
+                ship_positions_other_player[row][col] != 0
+                and ship_hps_other_player[row][col] <= 0
+            ):
+                tile_rgb_color = COLORS.RED_DESTROYED.value
+                tile_symbol = str(ship_positions_other_player[row][col])
+
+            # 4. set current players ships with >0 HP
+            if (
+                ship_positions_current_player[row][col] != 0
+                and ship_hps_current_player[row][col] > 0
+            ):
                 __ship_hp_rel: int = ship_hps_current_player[row][col]
                 tile_symbol = str(ship_positions_current_player[row][col])
 
-                if __ship_hp_rel <= 0:
-                    tile_rgb_color = COLORS.GREEN_DESTROYED.value
-                elif __ship_hp_rel > 0 and __ship_hp_rel < 0.25:
+                if __ship_hp_rel < 0.25:
                     tile_rgb_color = COLORS.GREEN_CRITICAL_HEALTH.value
                 elif __ship_hp_rel >= 0.25 and __ship_hp_rel < 0.50:
                     tile_rgb_color = COLORS.GREEN_LOW_HEALTH.value
@@ -256,14 +295,15 @@ def print_battleships_map(game: Game):
                 else:
                     tile_rgb_color = COLORS.GREEN_FULL_HEALTH.value
 
-            # case: other player's ship
-            elif ship_positions_other_player[row][col] != 0:
+            # 5. set other players ships
+            if (
+                ship_positions_other_player[row][col] != 0
+                and ship_hps_other_player[row][col] > 0
+            ):
                 __ship_hp_rel: int = ship_hps_other_player[row][col]
                 tile_symbol = str(ship_positions_other_player[row][col])
 
-                if __ship_hp_rel <= 0:
-                    tile_rgb_color = COLORS.RED_DESTROYED.value
-                elif __ship_hp_rel > 0 and __ship_hp_rel < 0.25:
+                if __ship_hp_rel < 0.25:
                     tile_rgb_color = COLORS.RED_CRITICAL_HEALTH.value
                 elif __ship_hp_rel >= 0.25 and __ship_hp_rel < 0.50:
                     tile_rgb_color = COLORS.RED_LOW_HEALTH.value
@@ -273,23 +313,6 @@ def print_battleships_map(game: Game):
                     tile_rgb_color = COLORS.RED_HIGH_HEALTH.value
                 else:
                     tile_rgb_color = COLORS.RED_FULL_HEALTH.value
-
-            # case: missed attack on the tile
-            elif missed_shots_current_player[row][col] != 0:
-                __missed_shots: int = missed_shots_current_player[row][col]
-                tile_symbol = "x"
-
-                if __missed_shots == 1:
-                    tile_rgb_color = COLORS.WATER_MISSED_ONCE.value
-                elif __missed_shots == 2:
-                    tile_rgb_color = COLORS.WATER_MISSED_TWICE.value
-                else:
-                    tile_rgb_color = COLORS.WATER_MISSED_OFTEN.value
-
-            # case: no information available (water)
-            else:
-                tile_symbol = "."
-                tile_rgb_color = COLORS.WATER_BASE.value
 
             styled_print(" " + str(tile_symbol) + " ", rgb_tuple=tile_rgb_color, end="")
 
