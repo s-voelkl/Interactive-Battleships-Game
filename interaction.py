@@ -177,20 +177,21 @@ def take_turn(game: Game):
             rgb_tuple=COLORS.LOG_MESSAGES.value,
         )
 
-        # Selecting a ship for the turn. Must have >0 hp
-        # the not anymore existing ships are not displayed but block their original enumerated number in the list.
-        #   this helps the user.
-        for i, ship in enumerate(current_player.ships):
-            if ship.current_hp > 0:
-                styled_print(
-                    f" [{i + 1}]\t{ship.ship_length}er Schiff\t mit {ship.current_hp} HP bei horizontal {string.ascii_uppercase[ship.position_start_h]}"
-                    + f" und vertikal {ship.position_start_v + 1},\tnoch sichtbar für {ship.remaining_visibility_rounds} Runden.",
-                    rgb_tuple=COLORS.LOG_MESSAGES.value,
-                )
-
         # choose a ship for the turn, by player input
         valid_input: bool = False
         while not valid_input:
+
+            # Selecting a ship for the turn. Must have >0 hp
+            # the not anymore existing ships are not displayed but block their original enumerated number in the list.
+            #   this helps the user.
+            for i, ship in enumerate(current_player.ships):
+                if ship.current_hp > 0:
+                    styled_print(
+                        f" [{i + 1}]\t{ship.ship_length}er Schiff\t mit {ship.current_hp} HP bei horizontal {string.ascii_uppercase[ship.position_start_h]}"
+                        + f" und vertikal {ship.position_start_v + 1},\tnoch sichtbar für {ship.remaining_visibility_rounds} Runden.",
+                        rgb_tuple=COLORS.LOG_MESSAGES.value,
+                    )
+
             try:
                 user_input: str = input(
                     f"Eingabe für Schiff [{1} - {game.total_ships_per_player}]: "
@@ -602,7 +603,7 @@ def __move_ship(game: Game, ship: Ship):
             )
         try:
             user_input: str = input(
-                f"Bewegungsrichtung [{', '.join(allowed_directions)}]: "
+                f"Bewegungsrichtung [{', '.join([str(d) for d in allowed_directions])}]: "
             )
             game.add_log_message(
                 f"Eingabe Bewegungsrichtung: {user_input}",
@@ -667,7 +668,7 @@ def __move_ship(game: Game, ship: Ship):
 
             movement_distance: int = int(user_input)
 
-            if not (1 <= movement_distance in directions[movement_direction]):
+            if not (1 <= movement_distance <= directions[movement_direction]):
                 game.add_log_message(
                     f"Die Anzahl der bewegten Felder muss zwischen 1 und {directions[movement_direction]} liegen!",
                     [game.current_player],
@@ -683,16 +684,49 @@ def __move_ship(game: Game, ship: Ship):
     # move for each tile:
     movement_done: int = 0
     while movement_done < movement_distance:
-        # Movement
-        # TODO: WRITE FUNCTION FOR IF THE MOVEMENT IS VALID. REDO
+        # Movement: adjust the positional values
+        act_single_ship_movement(game, ship, movement_direction, 1)
+        movement_done += 1
+
+        # check if ship crash
+        for player in game.ingame_players:
+            for other_ship in player.ships:
+
+                # shall not be the acting ship itself
+                if other_ship is ship:
+                    continue
+
+                if determine_if_ship_crash(ship, other_ship):
+                    if ship.remaining_visibility_rounds < 1:
+                        ship.remaining_visibility_rounds = 1
+                    if other_ship.remaining_visibility_rounds < 1:
+                        other_ship.remaining_visibility_rounds = 1
+
+                    ship_hp_before: int = ship.current_hp
+                    other_ship_hp_before: int = other_ship.current_hp
+                    act_ship_crashing_damages(ship, other_ship)
+
+                    game.add_log_message(
+                        f"Crash zwischen zwei Schiffen! "
+                        + f"Das bewegte Schiff nahm {abs(ship.current_hp - ship_hp_before)} Schaden, "
+                        + f"das gecrashte Schiff {abs(other_ship.current_hp - other_ship_hp_before)} Schaden"
+                    )
+                    update_ui(game)
+
+                    if other_ship.current_hp <= 0:
+                        game.add_log_message(f"Das gecrashte Schiff ist versunken!")
+                    update_ui(game)
+                    if ship.current_hp <= 0:
+                        game.add_log_message(
+                            f"Das bewegte Schiff ist versunken und kann sich nicht mehr bewegen!"
+                        )
+                        update_ui(game)
+                        break
 
         # UI Update
         update_ui(game)
-        time.sleep(1.5)
-
-        # check for crashing ships -> ui update and short wait time
-
-    # -----------
+        styled_print(f"{ship.ship_length}er Schiff um {movement_done} bewegt...")
+        time.sleep(1)
 
 
 def __attack_with_ship(game: Game, attacking_ship: Ship):
