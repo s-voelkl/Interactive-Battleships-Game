@@ -89,3 +89,10 @@ print(
     "crash as completely aligned: ",
     determine_if_ship_crash(Ship(5, 0, 0, 0, 4), Ship(5, 0, 0, 0, 4)),
 )
+
+print("\n\nact_single_ship_movement - normal movement")
+act_single_ship_movement(game, Ship(5, 0, 0, 0, 4), 2, 1)
+
+print("act_single_ship_movement - crash happening in the same row")
+game.ingame_players[0].ships.append(Ship(3, 0, 0, 6, 7, 2))
+act_single_ship_movement(game, Ship(5, 0, 0, 0, 4), 2, 1)

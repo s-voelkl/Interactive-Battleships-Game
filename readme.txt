@@ -17,15 +17,9 @@ IN CASE OF BUGS:
 
 
 TODO:
-* Bewegen nach vorne/hinten (+ Validierung)
-* drehen um die Achse (+ Validierung, selbe, wie Bewegung)
-* Angreifen mit Schiff auf Feld (inkl. Trefferwahrscheinlichkeit, Anzahl der Schüsse, HP-Anpassung, Sichtanpassung)
-
+- Schiff: drehen um die Achse (+ Validierung, selbe, wie Bewegung)
 - evtl. Zusatz:
-* Rammen
-* Kritische Treffer (+Wahrscheinlichkeit)
 * Erneutes Aufklärungsschüsse.
-
 - delete REDOs, delete test.py
 
 
@@ -126,9 +120,9 @@ SOURCES:
 
 [5]: Overview about ANSI escape sequences: stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
 
-[6]: Colors and Styles were adjusted together with Bing Chat in multiple prompts.
-    PROMPTS:
-    - Generation of green, red, blue and gray rgb colors.
+[6]: Colors and Styles were adjusted together with Bing Chat in multiple (>30) prompts.
+    PROMPTS LOOKED LIKE:
+    - Generation of green, red, blue and gray rgb color spectrums.
     - Changes of colors (steps smaller/bigger, darker, lighter, mixes with other colors)
     - rename of the colors to the health-levels (from 0 to 100%, translated into relative health)
     ANSWER: 

@@ -65,18 +65,6 @@ def update_ui(game: Game):
 
 
 def print_battleships_map(game: Game):
-
-    # test. REDO
-    # game.ingame_players[0].ships.append(Ship(5, 0, 4, 0, 0))
-    # game.ingame_players[0].ships.append(Ship(2, 0, 1, 9, 9))
-    # game.ingame_players[1].ships.append(Ship(4, 6, 9, 0, 0))
-    # game.ingame_players[1].ships.append(Ship(4, 7, 10, 2, 2))
-    # game.ingame_players[1].ships.append(Ship(2, 5, 5, 5, 6))
-    # game.ingame_players[1].ships[-1].remaining_visibility_rounds = 2
-    # game.ingame_players[0].missed_shots.append((3, 3))
-    # game.ingame_players[0].missed_shots.append((5, 5))
-    # game.ingame_players[0].missed_shots.append((9, 9))
-
     # find the current player (object)
     current_player: Player = game.get_current_player_object()
 
@@ -119,12 +107,6 @@ def print_battleships_map(game: Game):
             if (player.name != game.current_player) and not (
                 ship_is_visible(current_player.ships, ship)
             ):
-                # testing - REDO
-                # print("Ship from other player is not visible -> skip!")
-                # print(
-                #     f"  Ship infos: Length {ship.ship_length}, Horizontal: {ship.position_start_h} - {ship.position_end_h},"
-                #     + f" Vertical: {ship.position_start_v} - {ship.position_end_v}"
-                # )
                 continue
 
             # Vertical ship
@@ -168,19 +150,6 @@ def print_battleships_map(game: Game):
         else:
             ship_positions_other_player = ship_positions_anon.copy()
             ship_hps_other_player = ship_hps_anon.copy()
-
-    # test: REDO
-    # maps: list[list[list]] = [
-    #     ship_positions_current_player,
-    #     ship_positions_other_player,
-    #     missed_shots_current_player,
-    # ]
-    # redo
-    # for i, map in enumerate(maps):
-    #     print("Map: ", i + 1)
-    #     for row in map:
-    #         print(row)
-    #     print()
 
     # print the map using all of the values.
     # CHECK if there are conflicts

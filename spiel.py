@@ -8,12 +8,12 @@ import sys
 
 def startup():
     clear_console_window()
-    print("Battleships Game is starting...")
+    print("Battleships Game is starting...\n")
 
     # color and style activation
     os.system("")
     test_colors_and_styling()
-    time.sleep(0.25)  # redo
+    time.sleep(0.5)
     clear_console_window()
 
     # start game
