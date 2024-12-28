@@ -13,7 +13,7 @@ def startup():
     # color and style activation
     os.system("")
     test_colors_and_styling()
-    time.sleep(0.5)
+    time.sleep(1.5)
     clear_console_window()
 
     # start game

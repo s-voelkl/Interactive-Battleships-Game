@@ -179,14 +179,14 @@ class Game:
 
         self.avg_ship_length = avg_counter / self.total_ships_per_player
 
-        # set ingame players # redo to manual name (False)
+        # set ingame players
         self.player_count = 2
-        self.set_ingame_players(quick_starting=True)
+        self.set_ingame_players(quick_starting=False)
         self.current_player = (
             self.ingame_players[0].name if self.ingame_players[0] is not None else ""
         )
 
-        self.add_log_message("Game setup done.")
+        self.add_log_message("Spiel wurde erfolgreich gestartet.")
 
         return self
 

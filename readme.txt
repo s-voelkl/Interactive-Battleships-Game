@@ -4,23 +4,35 @@ START: python3 spiel.py
 INFORMATION:
 Version: 3.11.9 64-bit
 IDE: VS Code
-Test Environment: VS Code Console, CMD (Windows Command Prompt)
+Test Environment: VS Code Console, CMD (Windows Command Prompt) (Recommended -> start startup.bat in fullscreen)
 Sources: See "SOURCES" below.
+GitHub HTTPS: github.com/s-voelkl/Interactive-Battleships-Game
 
 Note: I have some prior knowledge, so some code samples are obviously without a source, 
     even though the topic hasn't been done in lecture.
 
 
-IN CASE OF BUGS:
-- ...
+COMMON PROBLEMS:
+1. Problem: Colors are not properly displayed.
+Solution: Check if the colors are displayed at the beginning of the game start for a short time.
+
+2. Problem: Cant name the players properly
+Solution: Try "Player1" and "Player2", dont take the same name twice.
+
+3. Problem: Cant place a ship onto the map.
+Solution: 
+- For Player1, try the following: Horizontal "A", vertical "5", rotation "3" (south)
+- For Player2, try the following: Horizontal "O", vertical "4", rotation "2" (east)
 
 
+POSSIBLE TODOS:
+- Turn the ship (ship rotation change from horizontal to vertical and vice versa)
+- more special shots (AoE, vision-shots, ...)
 
-TODO:
-- Schiff: drehen um die Achse (+ Validierung, selbe, wie Bewegung)
-- evtl. Zusatz:
-* Erneutes Aufklärungsschüsse.
-- delete REDOs, delete test.py
+
+IGNORE:
+- test.py
+- .gitignore
 
 
 SOURCES:
@@ -87,7 +99,7 @@ SOURCES:
         print("  +" + "---" * 10 + "+")  # Row separator
     [...]
 
-[5]: styled_print - partly generated with BingChat
+[4]: styled_print - partly generated with BingChat
     PROMPT:
     Write a Python function styled_print that prints text with customizable styles and 
     RGB colors using ANSI escape codes. Parameters: text (str), rgb_tuple (tuple), bold (bool), 
@@ -127,3 +139,5 @@ SOURCES:
     - rename of the colors to the health-levels (from 0 to 100%, translated into relative health)
     ANSWER: 
     see constants -> COLORS and STYLES
+
+[7]: GitHub page to this project: github.com/s-voelkl/Interactive-Battleships-Game
