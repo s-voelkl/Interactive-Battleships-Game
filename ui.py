@@ -4,9 +4,10 @@ import datetime as dt
 import os
 import string
 from constants import *
+from helper_functions import get_min_distances_between_ships
 
 
-def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
+def print_log_messages(game: Game, related_player: str, max_messages: int = 15):
     styled_print("\nNachrichten:", rgb_tuple=COLORS.LOG_MESSAGES.value)
 
     visible_log_messages = [
@@ -16,7 +17,7 @@ def print_log_messages(game: Game, related_player: str, max_messages: int = 20):
         or (related_player in log_message.related_players)
         or game.current_player == ""
     ]
-    # print messages, but only print last ~20 (default)
+    # print messages, but only print last ~15 (default)
     for log_message in visible_log_messages[-max_messages:]:
         datetime_formatted: str = (
             f"{log_message.time.hour:02}:{log_message.time.minute:02}:{log_message.time.second:02}"
@@ -296,39 +297,17 @@ def ship_is_visible(
 
     # Check if any of the current player's ships are within 2 tiles of the other player's ship
     for cp_ship in current_players_ships:
-        # exact positions of other players ship
-        op_ship_lower_pos_v = min(
-            other_players_ship.position_start_v, other_players_ship.position_end_v
-        )
-        op_ship_higher_pos_v = max(
-            other_players_ship.position_start_v, other_players_ship.position_end_v
-        )
-        op_ship_lower_pos_h = min(
-            other_players_ship.position_start_h, other_players_ship.position_end_h
-        )
-        op_ship_higher_pos_h = max(
-            other_players_ship.position_start_h, other_players_ship.position_end_h
+        # cant see other ships if already destroyed
+        if cp_ship.current_hp <= 0:
+            continue
+
+        min_diagonal, min_vertical, min_horizontal = get_min_distances_between_ships(
+            cp_ship, other_players_ship
         )
 
-        # exact positions of current players ship
-        cp_ship_lower_pos_v = min(cp_ship.position_start_v, cp_ship.position_end_v)
-        cp_ship_higher_pos_v = max(cp_ship.position_start_v, cp_ship.position_end_v)
-        cp_ship_lower_pos_h = min(cp_ship.position_start_h, cp_ship.position_end_h)
-        cp_ship_higher_pos_h = max(cp_ship.position_start_h, cp_ship.position_end_h)
+        if (min_vertical <= 2) and (min_horizontal <= 2):
+            return True
 
-        # go through every possible combination of ship alignment (also suitable for ships with length > 5!)
-        # vertical position - op
-        for v_op in range(op_ship_lower_pos_v, op_ship_higher_pos_v + 1):
-            # horizontal position - op
-            for h_op in range(op_ship_lower_pos_h, op_ship_higher_pos_h + 1):
-
-                # vertical position - cp
-                for v_cp in range(cp_ship_lower_pos_v, cp_ship_higher_pos_v + 1):
-                    # horizontal position - op
-                    for h_cp in range(cp_ship_lower_pos_h, cp_ship_higher_pos_h + 1):
-                        # get the absolute values (e.g. abs(-2) = 2)
-                        if (abs(v_op - v_cp) <= 2) and (abs(h_op - h_cp) <= 2):
-                            return True
     return False
 
 
