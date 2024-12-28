@@ -7,86 +7,47 @@ from typing import Dict
 
 
 def setup_ship_positions(game: Game):
-    game.add_log_message("Aufsetzen der Schiffspositionen\n")
+    game.add_log_message("Aufsetzen der Schiffspositionen.\n ")
     update_ui(game)
 
     # split map into two pieces. player 1 left, player 2 right
     player_1_min_position_h = 0
     player_1_max_position_h = game.initial_board_width - 1
     player_1_min_position_v = 0
-    player_1_max_position_v = game.initial_board_width - 1
+    player_1_max_position_v = game.initial_board_height - 1
 
-    player_2_min_position_h = game.total_board_width - game.initial_board_width - 1
+    player_2_min_position_h = game.total_board_width - game.initial_board_width
     player_2_max_position_h = game.total_board_width - 1
     player_2_min_position_v = 0
-    player_2_max_position_v = game.initial_board_width - 1
+    player_2_max_position_v = game.initial_board_height - 1
 
-    print(player_1_min_position_h)
-    print(player_1_max_position_h)
-    print(player_1_min_position_v)
-    print(player_1_max_position_v)
+    # automatic placement for debugging and testing of the game
+    # comment the following line out to disable the automatic placement
+    __automatic_ship_position_setup(game)
+    game.add_log_message(
+        "Info: Automatische Schiffsplatzierung für Testen aktiviert, siehe Skript."
+    )
 
-    # REDO AUTO PLACEMENT
-    print("REDO AUTO PLACEMENT!")
-
+    # manual placement
     # 1st player
-    # __place_multiple_ships_on_map(
-    #     game,
-    #     player_1_min_position_h,
-    #     player_1_max_position_h,
-    #     player_1_min_position_v,
-    #     player_1_max_position_v,
-    # )
-    # update_current_player(game)
-    # game.debug_display_game_props()  # redo
-
-    # # 2nd player
-    # __place_multiple_ships_on_map(
-    #     game,
-    #     player_2_min_position_h,
-    #     player_2_max_position_h,
-    #     player_2_min_position_v,
-    #     player_2_max_position_v,
-    # )
-    # update_current_player(game)
-
-    game.ingame_players[0].ships = [
-        Ship(5, 0, 4, 0, 0, 3, 1),
-        Ship(4, 0, 3, 2, 2, 3),
-        Ship(4, 2, 5, 4, 4),
-        Ship(3, 3, 1, 6, 6, 0),  # destroyed
-        Ship(3, 5, 5, 9, 7, 2),
-        Ship(3, 9, 7, 5, 5),
-        Ship(2, 9, 9, 9, 8, 1),
-        Ship(2, 2, 1, 9, 9, 0),  # destroyed
-        Ship(2, 8, 7, 0, 0),
-        Ship(2, 13, 14, 0, 0, 1, 1),
-    ]
-    update_ui(game)
-    time.sleep(0.25)
+    __place_multiple_ships_on_map(
+        game,
+        player_1_min_position_h,
+        player_1_max_position_h,
+        player_1_min_position_v,
+        player_1_max_position_v,
+    )
     update_current_player(game)
-    update_ui(game)
 
-    game.ingame_players[1].ships = [
-        Ship(5, 14, 18, 0, 0, 0),  # destroyed
-        Ship(4, 14, 17, 2, 2),
-        Ship(4, 15, 18, 4, 4, 2, 1),
-        Ship(3, 16, 18, 6, 6, 2),
-        Ship(3, 19, 21, 9, 9, 0),  # destroyed
-        Ship(3, 21, 21, 5, 7, 1, 1),
-        Ship(2, 23, 23, 9, 8),
-        Ship(2, 15, 14, 9, 9),
-        Ship(2, 21, 20, 0, 0, 1),
-        Ship(2, 5, 6, 2, 2, 1),
-    ]
-
-    update_ui(game)
-    time.sleep(0.25)
+    # 2nd player
+    __place_multiple_ships_on_map(
+        game,
+        player_2_min_position_h,
+        player_2_max_position_h,
+        player_2_min_position_v,
+        player_2_max_position_v,
+    )
     update_current_player(game)
-    update_ui(game)
-    game.add_log_message("Ships of players were set! (DEBUG)")
-
-    # redo until here. for testing!
 
 
 def update_current_player(game: Game):
@@ -97,16 +58,21 @@ def update_current_player(game: Game):
     next_player_index = (current_player_index + 1) % len(player_names)
 
     # set new player
-    game.add_log_message(f"{player_names[next_player_index]} ist am Zug!\n")
-    update_ui(game)
+    styled_print(
+        f"{player_names[next_player_index]} ist am Zug...\n",
+        rgb_tuple=COLORS.LOG_MESSAGES.value,
+    )
+    game.add_log_message(f"----- {player_names[next_player_index]} ist am Zug -----\n")
 
-    # REDO!
-    styled_print("3", rgb_tuple=COLORS.LOG_MESSAGES.value)
-    # time.sleep(1)
-    styled_print("2", rgb_tuple=COLORS.LOG_MESSAGES.value)
-    # time.sleep(1)
-    styled_print("1", rgb_tuple=COLORS.LOG_MESSAGES.value)
-    # time.sleep(1)
+    time.sleep(3)
+    clear_console_window()
+    styled_print(
+        f"{player_names[next_player_index]} ist am Zug.",
+        rgb_tuple=COLORS.LOG_MESSAGES.value,
+    )
+    input(
+        f"{player_names[next_player_index]}: Bitte ENTER (Return) drücken zum Fortfahren..."
+    )
 
     game.current_player = player_names[next_player_index]
 
@@ -182,7 +148,7 @@ def take_turn(game: Game):
             for i, ship in enumerate(current_player.ships):
                 if ship.current_hp > 0:
                     styled_print(
-                        f" [{i + 1}]\t{ship.ship_length}er Schiff\t mit {ship.current_hp} HP bei horizontal {string.ascii_uppercase[ship.position_start_h]}"
+                        f" [{i + 1}]\t{ship.ship_length}er Schiff\t mit {ship.current_hp} HP\t bei horizontal {string.ascii_uppercase[ship.position_start_h]}"
                         + f" und vertikal {ship.position_start_v + 1},\tnoch sichtbar für {ship.remaining_visibility_rounds} Runden.",
                         rgb_tuple=COLORS.LOG_MESSAGES.value,
                     )
@@ -314,7 +280,7 @@ def __place_multiple_ships_on_map(
         "Bitte platziere Deine Schiffe auf der Karte. "
         + "Sie sollten wie folgt positioniert sein: \n"
         + f"- Horizontale Position: {string.ascii_uppercase[min_position_h]} bis {string.ascii_uppercase[max_position_h]}\n"
-        + f"- Vertikale Position: {min_position_v + 1} bis {max_position_v}\n"
+        + f"- Vertikale Position: {min_position_v + 1} bis {max_position_v + 1}\n"
         + f'(i) Die Eingabe lässt sich mit "reset" zurücksetzen',
         [game.current_player],
     )
@@ -325,10 +291,16 @@ def __place_multiple_ships_on_map(
         # loop for the same ship lengths
         for ship in game.general_ship_infos:
 
+            # already auto-placed ships from the player
+            n_player_ships_with_same_length: int = 0
+            for s in current_player.ships:
+                if s.ship_length == ship.length:
+                    n_player_ships_with_same_length += 1
+            reset_actions = False
+
             # loop for the same ship
-            for i in range(ship.count):
+            for i in range(ship.count - n_player_ships_with_same_length):
                 valid_input: bool = False
-                reset_actions = False
                 ship_start_position_h: int = 0
                 ship_end_position_h: int = 0
                 ship_start_position_v: int = 0
@@ -345,7 +317,6 @@ def __place_multiple_ships_on_map(
                         [game.current_player],
                     )
                     update_ui(game)
-                    game.debug_display_game_props()  # redo
 
                     # Horizontal position (normally A - X)
                     while not valid_input and not reset_actions:
@@ -423,7 +394,7 @@ def __place_multiple_ships_on_map(
 
                             if not (min_position_v <= value <= max_position_v):
                                 game.add_log_message(
-                                    f"Der vertikale Wert muss zwischen {min_position_h + 1} und {max_position_h + 1} liegen!",
+                                    f"Der vertikale Wert muss zwischen {min_position_v + 1} und {max_position_v + 1} liegen!",
                                     [game.current_player],
                                 )
                                 update_ui(game)
@@ -727,12 +698,13 @@ def __move_ship(game: Game, ship: Ship):
             f"{ship.ship_length}er Schiff um {movement_done} bewegt...",
             rgb_tuple=COLORS.LOG_MESSAGES.value,
         )
-        time.sleep(1)
+        time.sleep(1.5)
 
 
 def __attack_with_ship(game: Game, attacking_ship: Ship):
     # Player has attacks based on the current health of the ship.
     attack_count: int = attacking_ship.current_hp
+
     for i in range(attack_count):
         if attacking_ship.current_hp <= 0:
             game.add_log_message(
@@ -875,7 +847,34 @@ def __attack_with_ship(game: Game, attacking_ship: Ship):
                     + f" und vertikal {attacked_ship.position_start_v + 1} wurde verfehlt!",
                     [],
                 )
-            update_ui(game)
+        update_ui(game)
 
     # adjust visibility for the attacking ship.
     attacking_ship.remaining_visibility_rounds += 1
+
+
+def __automatic_ship_position_setup(game: Game):
+    # here is the automatic placement of the ships for a faster testing of the software
+    game.ingame_players[0].ships = [
+        Ship(5, 0, 4, 0, 0),
+        Ship(4, 0, 3, 2, 2),
+        Ship(4, 6, 9, 0, 0),
+        Ship(3, 5, 5, 9, 7),
+        Ship(3, 9, 7, 5, 5),
+        # Ship(3, 2, 4, 5, 5),  #
+        # Ship(2, 0, 0, 8, 9),  #
+        # Ship(2, 8, 9, 9, 9),  #
+        # Ship(2, 7, 8, 2, 2),  #
+        # Ship(2, 3, 2, 9, 9),  #
+    ]
+    game.ingame_players[1].ships = [
+        Ship(5, 19, 23, 0, 0),
+        Ship(4, 18, 21, 2, 2),
+        Ship(4, 23, 23, 3, 6),
+        Ship(3, 16, 18, 6, 6),
+        Ship(3, 19, 21, 9, 9),
+        Ship(3, 21, 21, 5, 7),
+        Ship(2, 23, 23, 9, 8),
+        Ship(2, 14, 14, 1, 0),
+        Ship(2, 14, 15, 9, 9),
+    ]
