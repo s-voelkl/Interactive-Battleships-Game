@@ -861,11 +861,11 @@ def __automatic_ship_position_setup(game: Game):
         Ship(4, 6, 9, 0, 0),
         Ship(3, 5, 5, 9, 7),
         Ship(3, 9, 7, 5, 5),
-        Ship(3, 2, 4, 5, 5),  # redo
-        Ship(2, 0, 0, 8, 9),  #
-        Ship(2, 8, 9, 9, 9),  #
-        Ship(2, 7, 8, 2, 2),  #
-        Ship(2, 3, 2, 9, 9),  #
+        # Ship(3, 2, 4, 5, 5),  # redo
+        # Ship(2, 0, 0, 8, 9),  #
+        # Ship(2, 8, 9, 9, 9),  #
+        # Ship(2, 7, 8, 2, 2),  #
+        # Ship(2, 3, 2, 9, 9),  #
     ]
     game.ingame_players[1].ships = [
         Ship(5, 19, 23, 0, 0),
